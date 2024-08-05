@@ -1,0 +1,68 @@
+/* src/components/ScheduleList/ScheduleList.module.css */
+
+.scheduleList {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.filterContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.scheduleItem {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.scheduleItem h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+.scheduleItem p {
+  margin: 5px 0;
+  color: var(--text-color);
+}
+
+.scheduleItem button {
+  margin-right: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button.activePage {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.noResults {
+  text-align: center;
+  color: var(--text-color);
+  font-style: italic;
+}

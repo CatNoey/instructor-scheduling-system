@@ -1,0 +1,66 @@
+/* src/components/Calendar/Calendar.module.css */
+
+.calendar {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #ddd;
+}
+
+.calendarDayHeader {
+  background-color: #f0f0f0;
+  padding: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.calendarDay {
+  background-color: white;
+  min-height: 80px;
+  padding: 5px;
+  position: relative;
+}
+
+.empty {
+  background-color: #f9f9f9;
+}
+
+.today {
+  background-color: #e6f3ff;
+}
+
+.hasSchedule {
+  font-weight: bold;
+}
+
+.dayNumber {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+
+.scheduleIndicator {
+  width: 10px;
+  height: 10px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  margin: 2px;
+  display: inline-block;
+}
+
+.teamLeaderOnly {
+  background-color: #FFA500;
+}

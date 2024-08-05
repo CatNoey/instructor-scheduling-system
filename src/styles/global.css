@@ -1,0 +1,59 @@
+/* src/styles/global.css */
+
+:root {
+    /* Light theme variables */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f7f7f8;
+    --color-text-primary: #202123;
+    --color-text-secondary: #6e6e80;
+    --color-border: #e5e5e5;
+    --color-button-primary: #10a37f;
+    --color-button-hover: #1a7f64;
+    --color-button-text: #ffffff;
+  
+    /* You can add dark theme variables here if you want to implement a theme switch later */
+  }
+  
+  body {
+    font-family: 'Söhne', 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+  
+  button {
+    background-color: var(--color-button-primary);
+    color: var(--color-button-text);
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: var(--color-button-hover);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text-primary);
+  }
+  
+  /* Add more global styles as needed */

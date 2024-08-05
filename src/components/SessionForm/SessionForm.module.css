@@ -1,0 +1,73 @@
+.sessionForm {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .formGroup {
+    margin-bottom: 15px;
+  }
+  
+  .formGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .formGroup input,
+  .formGroup textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+  }
+  
+  .formGroup textarea {
+    height: 100px;
+    resize: vertical;
+  }
+  
+  .error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 5px;
+  }
+  
+  .formActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .formActions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .formActions button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .formActions button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
+  .formActions button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .formActions button[type="button"]:hover {
+    background-color: #545b62;
+  }
+  
+  .formActions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
