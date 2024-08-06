@@ -78,7 +78,7 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, canEd
             </tr>
           </thead>
           <tbody>
-            {sessions.map((session) => (
+            {sessions.map((session: Session) => (
               <tr key={session.id}>
                 <td>{session.startTime}</td>
                 <td>{session.endTime}</td>

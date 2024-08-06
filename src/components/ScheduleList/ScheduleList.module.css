@@ -2,20 +2,37 @@
 
 .scheduleList {
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
 }
 
 .filterContainer {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
-.searchInput {
+.searchInput,
+.filterSelect,
+.filterInput {
   flex: 1;
-  margin-right: 10px;
+  min-width: 200px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.clearFiltersButton {
+  padding: 8px 16px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .scheduleItem {
@@ -24,6 +41,7 @@
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .scheduleItem h3 {
@@ -36,8 +54,42 @@
   color: var(--text-color);
 }
 
-.scheduleItem button {
-  margin-right: 10px;
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.editButton,
+.deleteButton,
+.viewSessionsButton {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.editButton {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.deleteButton {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.viewSessionsButton {
+  background-color: var(--info-color);
+  color: white;
+}
+
+.editButton:hover,
+.deleteButton:hover,
+.viewSessionsButton:hover {
+  opacity: 0.9;
 }
 
 .pagination {
@@ -65,4 +117,5 @@
   text-align: center;
   color: var(--text-color);
   font-style: italic;
+  margin-top: 20px;
 }

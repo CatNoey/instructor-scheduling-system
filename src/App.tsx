@@ -6,12 +6,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { RootState, AppDispatch } from './store';
+import Notifications from './components/Notification/Notification';
 import Login from './components/Login/Login';
 import ScheduleManagement from './components/ScheduleManagement/ScheduleManagement';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import { login } from './store/authSlice';
 import authService from './services/authService';
-// import './App.css';
+import './App.css';
 import './styles/global.css';
 
 const App: React.FC = () => {
@@ -29,6 +30,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="App">
+        {isAuthenticated && <Notifications />}
         <Routes>
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/" replace /> : <Login />
@@ -37,7 +39,7 @@ const App: React.FC = () => {
             <Route path="/" element={<ScheduleManagement />} />
             {/* Add other protected routes here */}
           </Route>
-          </Routes>
+        </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>

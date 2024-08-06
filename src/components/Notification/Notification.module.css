@@ -1,0 +1,94 @@
+/* src/components/Notification/Notification.module.css */
+
+.notificationsContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.toggleButton {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.badge {
+  background-color: var(--danger-color);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+
+.notificationsList {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.notificationItem {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationItem p {
+  margin: 0 0 5px 0;
+}
+
+.notificationItem small {
+  color: var(--text-secondary-color);
+}
+
+.info {
+  background-color: var(--info-light-color);
+}
+
+.warning {
+  background-color: var(--warning-light-color);
+}
+
+.error {
+  background-color: var(--danger-light-color);
+}
+
+.read {
+  opacity: 0.7;
+}
+
+.unread {
+  font-weight: bold;
+}
+
+.markAsReadButton {
+  background-color: transparent;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 5px 0;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.noNotifications {
+  padding: 10px;
+  text-align: center;
+  color: var(--text-secondary-color);
+}

@@ -32,15 +32,20 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [filterRegion, setFilterRegion] = useState('');
 
   const filteredSchedules = useMemo(() => {
     return schedules.filter((schedule) => {
-      const matchesSearch = schedule.institutionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            schedule.region.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = 
+        schedule.institutionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        schedule.region.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = filterType === '' || schedule.trainingType === filterType;
-      return matchesSearch && matchesFilter;
+      const matchesDate = filterDate === '' || schedule.date.includes(filterDate);
+      const matchesRegion = filterRegion === '' || schedule.region.toLowerCase().includes(filterRegion.toLowerCase());
+      return matchesSearch && matchesFilter && matchesDate && matchesRegion;
     });
-  }, [schedules, searchTerm, filterType]);
+  }, [schedules, searchTerm, filterType, filterDate, filterRegion]);
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -57,8 +62,19 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     setCurrentPage(1);
   };
 
-  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilterType(event.target.value);
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const { name, value } = event.target;
+    switch (name) {
+      case 'type':
+        setFilterType(value);
+        break;
+      case 'date':
+        setFilterDate(value);
+        break;
+      case 'region':
+        setFilterRegion(value);
+        break;
+    }
     setCurrentPage(1);
   };
 
@@ -66,6 +82,14 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     if (window.confirm('Are you sure you want to delete this schedule?')) {
       dispatch(deleteSchedule(scheduleId));
     }
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setFilterType('');
+    setFilterDate('');
+    setFilterRegion('');
+    setCurrentPage(1);
   };
 
   return (
@@ -79,6 +103,7 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           className={styles.searchInput}
         />
         <select
+          name="type"
           value={filterType}
           onChange={handleFilterChange}
           className={styles.filterSelect}
@@ -90,6 +115,24 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           <option value="remote">Remote</option>
           <option value="other">Other</option>
         </select>
+        <input
+          type="date"
+          name="date"
+          value={filterDate}
+          onChange={handleFilterChange}
+          className={styles.filterInput}
+        />
+        <input
+          type="text"
+          name="region"
+          placeholder="Filter by region"
+          value={filterRegion}
+          onChange={handleFilterChange}
+          className={styles.filterInput}
+        />
+        <button onClick={handleClearFilters} className={styles.clearFiltersButton}>
+          Clear Filters
+        </button>
       </div>
 
       {currentItems.map((schedule) => (
@@ -100,17 +143,25 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           <p>Capacity: {schedule.capacity}</p>
           <p>Type: {schedule.trainingType}</p>
           <p>Status: {schedule.status}</p>
-          {permissions.editSchedules && (
-            <button onClick={() => onEdit(schedule)}>Edit</button>
-          )}
-          {permissions.deleteSchedules && (
-            <button onClick={() => handleDelete(schedule.id)} disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-          )}
-          {permissions.viewSessions && (
-            <button onClick={() => onViewSessions(schedule)}>View Sessions</button>
-          )}
+          <div className={styles.buttonContainer}>
+            {permissions.editSchedules && (
+              <button onClick={() => onEdit(schedule)} className={styles.editButton}>Edit</button>
+            )}
+            {permissions.deleteSchedules && (
+              <button 
+                onClick={() => handleDelete(schedule.id)} 
+                disabled={isDeleting}
+                className={styles.deleteButton}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            )}
+            {permissions.viewSessions && (
+              <button onClick={() => onViewSessions(schedule)} className={styles.viewSessionsButton}>
+                View Sessions
+              </button>
+            )}
+          </div>
         </div>
       ))}
       
