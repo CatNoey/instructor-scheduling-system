@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -9,6 +7,7 @@ import type { RootState, AppDispatch } from './store';
 import Notifications from './components/Notification/Notification';
 import Login from './components/Login/Login';
 import ScheduleManagement from './components/ScheduleManagement/ScheduleManagement';
+import InstructorDashboard from './components/InstructorDashboard/InstructorDashboard';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import { login } from './store/authSlice';
 import authService from './services/authService';
@@ -16,14 +15,14 @@ import './App.css';
 import './styles/global.css';
 
 const App: React.FC = () => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
-    const user = authService.getCurrentUser();
+    const currentUser = authService.getCurrentUser();
     const token = authService.getAuthToken();
-    if (user && token && !isAuthenticated) {
-      dispatch(login({ username: user.username, password: '' }));
+    if (currentUser && token && !isAuthenticated) {
+      dispatch(login({ username: currentUser.username, password: '' }));
     }
   }, [dispatch, isAuthenticated]);
 
@@ -36,7 +35,9 @@ const App: React.FC = () => {
             isAuthenticated ? <Navigate to="/" replace /> : <Login />
           } />
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<ScheduleManagement />} />
+            <Route path="/" element={
+              user?.role === 'instructor' ? <InstructorDashboard /> : <ScheduleManagement />
+            } />
             {/* Add other protected routes here */}
           </Route>
         </Routes>

@@ -8,7 +8,7 @@ import styles from './Notification.module.css';
 
 const Notifications: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const notifications = useSelector((state: RootState) => state.notifications?.notifications ?? []);
+  const notifications = useSelector((state: RootState) => state.notifications.notifications);
   const [isOpen, setIsOpen] = useState(false);
 
   const unreadCount = notifications.filter((n: NotificationType) => !n.isRead).length;

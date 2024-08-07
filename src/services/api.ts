@@ -1,9 +1,14 @@
 // src/services/api.ts
 
 import axios, { AxiosResponse, AxiosError } from 'axios';
-import { Schedule, Session } from '../types';
+import { Schedule, Session, InstructorApplication, ApiResponse as ApiResponseType } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+});
 
 interface ApiResponse<T> {
   success: boolean;
@@ -19,15 +24,10 @@ interface ApiResponse<T> {
   };
 }
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
-
 const handleApiError = (error: unknown, operation: string) => {
   console.error(`Error in ${operation}:`, error);
   if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<ApiResponse<any>>;
+    const axiosError = error as AxiosError<ApiResponseType<any>>;
     console.error('Axios error details:', axiosError.response?.data);
     console.error('Axios error status:', axiosError.response?.status);
     console.error('Axios error headers:', axiosError.response?.headers);
@@ -117,6 +117,33 @@ export const updateSession = async (session: Session): Promise<Session> => {
 
 export const deleteSession = async (scheduleId: string, sessionId: string): Promise<void> => {
   await api.delete(`/schedules/${scheduleId}/sessions/${sessionId}`);
+};
+
+export const getAvailableSessions = async (): Promise<ApiResponseType<Session[]>> => {
+  try {
+    const response: AxiosResponse<ApiResponseType<Session[]>> = await api.get('/sessions/available');
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'fetch available sessions');
+  }
+};
+
+export const applyForSession = async (sessionId: string): Promise<ApiResponseType<InstructorApplication>> => {
+  try {
+    const response: AxiosResponse<ApiResponseType<InstructorApplication>> = await api.post(`/sessions/${sessionId}/apply`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'apply for session');
+  }
+};
+
+export const cancelApplication = async (applicationId: string): Promise<ApiResponseType<void>> => {
+  try {
+    const response: AxiosResponse<ApiResponseType<void>> = await api.delete(`/applications/${applicationId}`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'cancel application');
+  }
 };
 
 export default api;

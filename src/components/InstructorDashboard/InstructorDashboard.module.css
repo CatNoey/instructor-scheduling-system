@@ -1,0 +1,58 @@
+.instructorDashboard {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .userInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .logoutButton {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .sessionList, .applicationList {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sessionItem, .applicationItem {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .sessionInfo, .applicationInfo {
+    flex-grow: 1;
+  }
+  
+  .applyButton, .cancelButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .cancelButton {
+    background-color: #f44336;
+  }
+  
+  h2 {
+    margin-top: 30px;
+  }

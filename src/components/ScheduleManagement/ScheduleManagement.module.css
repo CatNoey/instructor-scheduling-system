@@ -42,3 +42,15 @@
   .scheduleListContainer {
     flex: 1;
   }
+
+  .filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .filters label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }

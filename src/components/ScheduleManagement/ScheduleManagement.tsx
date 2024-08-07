@@ -23,15 +23,13 @@ const ScheduleManagement: React.FC = () => {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | undefined>(undefined);
+  const [filters, setFilters] = useState<string[]>([]);
+
+  const allFilters = ['class', 'teacher', 'all_staff', 'remote', 'other'];
 
   useEffect(() => {
     dispatch(fetchSchedules());
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log('Schedules in ScheduleManagement:', schedules);
-    console.log('Number of schedules:', schedules.length);
-  }, [schedules]);
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -74,6 +72,23 @@ const ScheduleManagement: React.FC = () => {
     navigate('/login');
   }, [dispatch, navigate]);
 
+  const handleFilterChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = event.target;
+    setFilters(prevFilters => 
+      checked 
+        ? [...prevFilters, value]
+        : prevFilters.filter(filter => filter !== value)
+    );
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    setFilters(filters.length === allFilters.length ? [] : allFilters);
+  }, [filters]);
+
+  const filteredSchedules = schedules.filter(schedule => 
+    filters.length === 0 || filters.includes(schedule.trainingType)
+  );
+
   if (!user || !permissions) {
     return <div>You must be logged in to view this page.</div>;
   }
@@ -81,13 +96,6 @@ const ScheduleManagement: React.FC = () => {
   if (status === 'loading') {
     return <div>Loading schedules...</div>;
   }
-
-  const filteredSchedules = selectedDate
-    ? schedules.filter(
-        (schedule) =>
-          new Date(schedule.date).toDateString() === selectedDate.toDateString()
-      )
-    : [];
 
   return (
     <div className={styles.scheduleManagement}>
@@ -107,9 +115,26 @@ const ScheduleManagement: React.FC = () => {
         <ScheduleForm schedule={editingSchedule} onClose={handleCloseForm} />
       )}
 
+      <div className={styles.filters}>
+        <button onClick={handleSelectAll} className={styles.selectAllButton}>
+          {filters.length === allFilters.length ? 'Deselect All' : 'Select All'}
+        </button>
+        {allFilters.map(filter => (
+          <label key={filter}>
+            <input
+              type="checkbox"
+              value={filter}
+              onChange={handleFilterChange}
+              checked={filters.includes(filter)}
+            />
+            {filter.charAt(0).toUpperCase() + filter.slice(1).replace('_', ' ')}
+          </label>
+        ))}
+      </div>
+
       <div className={styles.calendarAndList}>
         <Calendar 
-          schedules={schedules} 
+          schedules={filteredSchedules} 
           onDateSelect={handleDateSelect} 
           userRole={user.role}
           canViewTeamLeaderSchedules={permissions.viewTeamLeaderSchedules}
@@ -118,7 +143,9 @@ const ScheduleManagement: React.FC = () => {
           <div className={styles.scheduleListContainer}>
             <h2>Schedules for {selectedDate.toDateString()}</h2>
             <ScheduleList
-              schedules={filteredSchedules}
+              schedules={filteredSchedules.filter(
+                schedule => new Date(schedule.date).toDateString() === selectedDate.toDateString()
+              )}
               onEdit={handleEditSchedule}
               onViewSessions={handleScheduleSelect}
               permissions={{
