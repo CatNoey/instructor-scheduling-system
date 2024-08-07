@@ -1,6 +1,6 @@
 // src/components/ScheduleManagement/ScheduleManagement.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../store';
@@ -11,7 +11,7 @@ import Calendar from '../Calendar/Calendar';
 import ScheduleForm from '../ScheduleForm/ScheduleForm';
 import SessionManagement from '../SessionManagement/SessionManagement';
 import ScheduleList from '../ScheduleList/ScheduleList';
-import { Schedule } from '../../types';
+import { Schedule, TrainingType } from '../../types';
 import styles from './ScheduleManagement.module.css';
 
 const ScheduleManagement: React.FC = () => {
@@ -23,9 +23,9 @@ const ScheduleManagement: React.FC = () => {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | undefined>(undefined);
-  const [filters, setFilters] = useState<string[]>([]);
+  const [filters, setFilters] = useState<TrainingType[]>([]);
 
-  const allFilters = ['class', 'teacher', 'all_staff', 'remote', 'other'];
+  const allFilters: TrainingType[] = ['class', 'teacher', 'all_staff', 'remote', 'other'];
 
   useEffect(() => {
     dispatch(fetchSchedules());
@@ -76,18 +76,25 @@ const ScheduleManagement: React.FC = () => {
     const { value, checked } = event.target;
     setFilters(prevFilters => 
       checked 
-        ? [...prevFilters, value]
+        ? [...prevFilters, value as TrainingType]
         : prevFilters.filter(filter => filter !== value)
     );
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    setFilters(filters.length === allFilters.length ? [] : allFilters);
-  }, [filters]);
+    setFilters(prevFilters => 
+      prevFilters.length === allFilters.length ? [] : [...allFilters]
+    );
+  }, []);
 
-  const filteredSchedules = schedules.filter(schedule => 
-    filters.length === 0 || filters.includes(schedule.trainingType)
+  const filteredSchedules = useMemo(() => 
+    schedules.filter(schedule => 
+      filters.length === 0 || filters.includes(schedule.trainingType)
+    ),
+    [schedules, filters]
   );
+
+  const isAllSelected = filters.length === allFilters.length;
 
   if (!user || !permissions) {
     return <div>You must be logged in to view this page.</div>;
@@ -116,16 +123,21 @@ const ScheduleManagement: React.FC = () => {
       )}
 
       <div className={styles.filters}>
-        <button onClick={handleSelectAll} className={styles.selectAllButton}>
-          {filters.length === allFilters.length ? 'Deselect All' : 'Select All'}
+        <button 
+          onClick={handleSelectAll} 
+          className={`${styles.selectAllButton} ${isAllSelected ? styles.allSelected : ''}`}
+          aria-pressed={isAllSelected}
+        >
+          {isAllSelected ? 'Deselect All' : 'Select All'}
         </button>
         {allFilters.map(filter => (
-          <label key={filter}>
+          <label key={filter} className={styles.filterLabel}>
             <input
               type="checkbox"
               value={filter}
               onChange={handleFilterChange}
               checked={filters.includes(filter)}
+              aria-label={`Filter by ${filter.replace('_', ' ')}`}
             />
             {filter.charAt(0).toUpperCase() + filter.slice(1).replace('_', ' ')}
           </label>

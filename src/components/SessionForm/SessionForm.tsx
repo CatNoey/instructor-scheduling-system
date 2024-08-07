@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store';
 import { addSession, updateSession } from '../../store/sessionSlice';
-import { Session } from '../../types';
+import { Session, TrainingType } from '../../types';
 import { showSuccessNotification, showErrorNotification } from '../../utils/notifications';
 import styles from './SessionForm.module.css';
 
@@ -20,6 +20,7 @@ const initialFormState: Omit<Session, 'id'> = {
   endTime: '',
   instructor: '',
   notes: '',
+  trainingType: 'class' as TrainingType, // Add this line
 };
 
 const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, onClose }) => {
@@ -43,6 +44,7 @@ const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, onClose 
     if (!formData.startTime) newErrors.startTime = 'Start time is required';
     if (!formData.endTime) newErrors.endTime = 'End time is required';
     if (!formData.instructor) newErrors.instructor = 'Instructor is required';
+    if (!formData.trainingType) newErrors.trainingType = 'Training type is required';
     
     // Check if end time is after start time
     if (formData.startTime && formData.endTime) {
@@ -57,7 +59,7 @@ const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, onClose 
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear the error for this field when the user starts typing
@@ -126,6 +128,24 @@ const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, onClose 
           required
         />
         {errors.instructor && <span className={styles.error}>{errors.instructor}</span>}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="trainingType">Training Type:</label>
+        <select
+          id="trainingType"
+          name="trainingType"
+          value={formData.trainingType}
+          onChange={handleChange}
+          required
+        >
+          <option value="class">Class</option>
+          <option value="teacher">Teacher</option>
+          <option value="all_staff">All Staff</option>
+          <option value="remote">Remote</option>
+          <option value="other">Other</option>
+        </select>
+        {errors.trainingType && <span className={styles.error}>{errors.trainingType}</span>}
       </div>
 
       <div className={styles.formGroup}>

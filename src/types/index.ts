@@ -30,6 +30,8 @@ export interface Schedule {
   createdBy: string;
 }
 
+export type TrainingType = 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
+
 export interface Session {
   id: string;
   scheduleId: string;
