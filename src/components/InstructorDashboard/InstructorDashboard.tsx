@@ -61,22 +61,22 @@ const InstructorDashboard: React.FC = () => {
 
       <h2>Available Sessions</h2>
       <ul className={styles.sessionList}>
-        {availableSessions.map(session => (
+        {availableSessions.map((session: Session) => (
           <li key={session.id} className={styles.sessionItem}>
             <div className={styles.sessionInfo}>
               <h3>{session.testName}</h3>
               <p>Date: {new Date(session.startTime).toLocaleDateString()}</p>
               <p>Time: {new Date(session.startTime).toLocaleTimeString()} - {new Date(session.endTime).toLocaleTimeString()}</p>
               <p>Type: {session.trainingType}</p>
-            </div>
+              </div>
             <button onClick={() => handleApply(session.id)} className={styles.applyButton}>Apply</button>
-          </li>
+            </li>
         ))}
       </ul>
 
       <h2>My Applications</h2>
       <ul className={styles.applicationList}>
-        {instructorApplications.map(application => (
+        {instructorApplications.map((application: InstructorApplication) => (
           <li key={application.id} className={styles.applicationItem}>
             <div className={styles.applicationInfo}>
               <h3>{application.session.testName}</h3>

@@ -1,14 +1,12 @@
-// src/types/index.ts
-
 import { UserRole } from '../utils/permissions';
 
 export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'instructor'; // Adjust these roles as needed for your application
+  role: 'admin' | 'instructor';
 }
-  
+
 export interface Instructor {
   id: string;
   userId: string;
@@ -20,10 +18,10 @@ export interface Instructor {
   prohibitedAdmins: string[];
   notes: string;
 }
-  
+
 export interface Schedule {
   id: string;
-  date: string; // ISO string
+  date: string;
   institutionName: string;
   region: string;
   capacity: number;
@@ -44,6 +42,15 @@ export interface Session {
   classCount?: number;
   studentCount?: number;
   compensation?: number;
+  trainingType: 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
+}
+
+export interface InstructorApplication {
+  id: string;
+  sessionId: string;
+  instructorId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  session: Session;
 }
 
 export interface Institution {

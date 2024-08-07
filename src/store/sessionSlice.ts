@@ -58,14 +58,22 @@ export const fetchAvailableSessions = createAsyncThunk<Session[], void, { reject
   }
 );
 
-export const applyForSession = createAsyncThunk<InstructorApplication, string, { rejectValue: string }>(
+export const applyForSession = createAsyncThunk<
+  InstructorApplication,
+  string,
+  { rejectValue: string }
+>(
   'sessions/applyForSession',
   async (sessionId, { rejectWithValue }) => {
     try {
       const response = await applyForSessionApi(sessionId);
-      return response.data;
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.error?.message || 'Failed to apply for session');
+      }
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to apply for session');
+      return rejectWithValue(error instanceof Error ? error.message : 'An unknown error occurred');
     }
   }
 );
@@ -140,6 +148,10 @@ const sessionSlice = createSlice({
       })
       .addCase(applyForSession.fulfilled, (state, action: PayloadAction<InstructorApplication>) => {
         state.instructorApplications.push(action.payload);
+      })
+      .addCase(applyForSession.rejected, (state, action) => {
+        // Handle rejection, maybe set an error message in the state
+        state.error = action.payload || 'Failed to apply for session';
       })
       .addCase(cancelApplication.fulfilled, (state, action: PayloadAction<string>) => {
         state.instructorApplications = state.instructorApplications.filter(
