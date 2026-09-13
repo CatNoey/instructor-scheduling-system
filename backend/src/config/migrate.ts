@@ -3,8 +3,16 @@ import sequelize from './database';
 import { getAppConfig } from './env';
 import { initialSchemaMigration } from './migrations/001-initial-schema';
 import { Migration } from './migrations/types';
+import instructorApplicationUniqueConstraint from '../migrations/002-add-instructor-application-unique-constraint';
 
-const migrations: Migration[] = [initialSchemaMigration];
+const migrations: Migration[] = [
+  initialSchemaMigration,
+  {
+    name: '002-instructor-application-unique-constraint',
+    up: (queryInterface, transaction) => instructorApplicationUniqueConstraint.up(queryInterface, transaction),
+    down: (queryInterface, transaction) => instructorApplicationUniqueConstraint.down(queryInterface, transaction),
+  },
+];
 const historyTable = 'SchemaMigrations';
 
 export const runMigrations = async (): Promise<string[]> => {
