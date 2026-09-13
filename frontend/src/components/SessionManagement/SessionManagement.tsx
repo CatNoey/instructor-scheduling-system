@@ -10,20 +10,20 @@ import { showErrorNotification, showSuccessNotification } from '../../utils/noti
 import styles from './SessionManagement.module.css';
 
 export interface SessionManagementProps {
-  scheduleId: string;
+  scheduleId: number;
+  scheduleDate: string;
   canEdit: boolean;
   canDelete: boolean;
-  canApply: boolean;
 }
 
-const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, canEdit, canDelete, canApply }) => {
+const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, scheduleDate, canEdit, canDelete }) => {
   const dispatch: AppDispatch = useDispatch();
   const { items: sessions, status, error } = useSelector((state: RootState) => state.sessions);
   const [selectedSession, setSelectedSession] = useState<Session | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchSessions(scheduleId));
+    void dispatch(fetchSessions(scheduleId));
   }, [dispatch, scheduleId]);
 
   const handleAddSession = () => {
@@ -36,7 +36,7 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, canEd
     setIsFormOpen(true);
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
+  const handleDeleteSession = async (sessionId: number) => {
     if (window.confirm('Are you sure you want to delete this session?')) {
       try {
         await dispatch(deleteSession({ scheduleId, sessionId })).unwrap();
@@ -80,8 +80,8 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, canEd
           <tbody>
             {sessions.map((session: Session) => (
               <tr key={session.id}>
-                <td>{session.startTime}</td>
-                <td>{session.endTime}</td>
+                <td>{new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                <td>{new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                 <td>{session.instructor}</td>
                 <td>{session.notes}</td>
                 {(canEdit || canDelete) && (
@@ -107,6 +107,7 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, canEd
         <SessionForm
           session={selectedSession}
           scheduleId={scheduleId}
+          scheduleDate={scheduleDate}
           onClose={handleCloseForm}
         />
       )}

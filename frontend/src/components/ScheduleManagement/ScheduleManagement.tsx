@@ -12,12 +12,13 @@ import ScheduleForm from '../ScheduleForm/ScheduleForm';
 import SessionManagement from '../SessionManagement/SessionManagement';
 import ScheduleList from '../ScheduleList/ScheduleList';
 import { Schedule, TrainingType } from '../../types';
+import { businessDateToLocalDate } from '../../utils/dateTime';
 import styles from './ScheduleManagement.module.css';
 
 const ScheduleManagement: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
-  const { items: schedules, status } = useSelector((state: RootState) => state.schedules);
+  const { items: schedules, status, error } = useSelector((state: RootState) => state.schedules);
   const { user, permissions } = useSelector((state: RootState) => state.auth);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -28,8 +29,12 @@ const ScheduleManagement: React.FC = () => {
   const allFilters: TrainingType[] = ['class', 'teacher', 'all_staff', 'remote', 'other'];
 
   useEffect(() => {
-    dispatch(fetchSchedules());
+    void dispatch(fetchSchedules());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedSchedule && !schedules.some((schedule) => schedule.id === selectedSchedule.id)) setSelectedSchedule(null);
+  }, [schedules, selectedSchedule]);
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -100,10 +105,6 @@ const ScheduleManagement: React.FC = () => {
     return <div>You must be logged in to view this page.</div>;
   }
 
-  if (status === 'loading') {
-    return <div>Loading schedules...</div>;
-  }
-
   return (
     <div className={styles.scheduleManagement}>
       <h1>Schedule Management</h1>
@@ -117,6 +118,8 @@ const ScheduleManagement: React.FC = () => {
           Add New Schedule
         </button>
       )}
+      {status === 'loading' && <p>Loading schedules...</p>}
+      {status === 'failed' && <p role="alert">Unable to load schedules: {error}</p>}
       
       {isFormOpen && permissions.editSchedules && (
         <ScheduleForm schedule={editingSchedule} onClose={handleCloseForm} />
@@ -149,14 +152,13 @@ const ScheduleManagement: React.FC = () => {
           schedules={filteredSchedules} 
           onDateSelect={handleDateSelect} 
           userRole={user.role}
-          canViewTeamLeaderSchedules={permissions.viewTeamLeaderSchedules}
         />
         {selectedDate && (
           <div className={styles.scheduleListContainer}>
             <h2>Schedules for {selectedDate.toDateString()}</h2>
             <ScheduleList
               schedules={filteredSchedules.filter(
-                schedule => new Date(schedule.date).toDateString() === selectedDate.toDateString()
+                schedule => businessDateToLocalDate(schedule.date).toDateString() === selectedDate.toDateString()
               )}
               onEdit={handleEditSchedule}
               onViewSessions={handleScheduleSelect}
@@ -173,9 +175,9 @@ const ScheduleManagement: React.FC = () => {
       {selectedSchedule && permissions.viewSessions && (
         <SessionManagement 
           scheduleId={selectedSchedule.id}
+          scheduleDate={selectedSchedule.date}
           canEdit={permissions.editSessions}
           canDelete={permissions.deleteSessions}
-          canApply={permissions.applyToSessions}
         />
       )}
     </div>

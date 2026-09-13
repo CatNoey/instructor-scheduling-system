@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { addSchedule, updateSchedule } from '../../store/scheduleSlice';
-import { Schedule } from '../../types';
+import { Schedule, ScheduleInput } from '../../types';
 import { showSuccessNotification, showErrorNotification } from '../../utils/notifications';
 import styles from './ScheduleForm.module.css';
 
@@ -13,8 +13,11 @@ interface ScheduleFormProps {
   onClose: () => void;
 }
 
-const initialFormState: Omit<Schedule, 'id' | 'createdBy'> = {
-  date: new Date().toISOString().split('T')[0], // Store as YYYY-MM-DD string
+const initialFormState: ScheduleInput = {
+  date: (() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  })(),
   institutionName: '',
   region: '',
   capacity: 0,
@@ -23,15 +26,16 @@ const initialFormState: Omit<Schedule, 'id' | 'createdBy'> = {
 };
 
 const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
-  const [formData, setFormData] = useState<Omit<Schedule, 'id' | 'createdBy'>>(
-    schedule ? { ...schedule } : initialFormState
+  const [formData, setFormData] = useState<ScheduleInput>(
+    schedule ? (({ id, ...input }) => input)(schedule) : initialFormState
   );
   const [errors, setErrors] = useState<Partial<Record<keyof Schedule, string>>>({});
   const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
     if (schedule) {
-      setFormData({ ...schedule });
+      const { id, ...input } = schedule;
+      setFormData(input);
     }
   }, [schedule]);
 
@@ -60,7 +64,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
     if (validateForm()) {
       try {
         if (schedule) {
-          await dispatch(updateSchedule({ ...formData, id: schedule.id, createdBy: schedule.createdBy })).unwrap();
+          await dispatch(updateSchedule({ ...formData, id: schedule.id })).unwrap();
           showSuccessNotification('Schedule updated successfully');
         } else {
           await dispatch(addSchedule(formData)).unwrap();

@@ -28,7 +28,11 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(login({ username, password }));
+    try {
+      await dispatch(login({ username, password })).unwrap();
+    } catch {
+      // The slice stores the normalized API message for the form to display.
+    }
   };
 
   return (

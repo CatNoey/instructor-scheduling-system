@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { deleteSchedule } from '../../store/scheduleSlice';
 import { Schedule } from '../../types';
+import { businessDateToLocalDate } from '../../utils/dateTime';
+import { showErrorNotification } from '../../utils/notifications';
 import styles from './ScheduleList.module.css';
 
 interface ScheduleListProps {
@@ -18,8 +20,6 @@ interface ScheduleListProps {
   };
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const ScheduleList: React.FC<ScheduleListProps> = ({
   schedules,
   onEdit,
@@ -29,7 +29,6 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
   const dispatch: AppDispatch = useDispatch();
   const { isDeleting } = useSelector((state: RootState) => state.schedules);
 
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterDate, setFilterDate] = useState('');
@@ -47,19 +46,8 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     });
   }, [schedules, searchTerm, filterType, filterDate, filterRegion]);
 
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentItems = filteredSchedules.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(filteredSchedules.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -75,12 +63,15 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
         setFilterRegion(value);
         break;
     }
-    setCurrentPage(1);
   };
 
-  const handleDelete = (scheduleId: string) => {
+  const handleDelete = async (scheduleId: number) => {
     if (window.confirm('Are you sure you want to delete this schedule?')) {
-      dispatch(deleteSchedule(scheduleId));
+      try {
+        await dispatch(deleteSchedule(scheduleId)).unwrap();
+      } catch (error) {
+        showErrorNotification(error instanceof Error ? error.message : 'Unable to delete the schedule');
+      }
     }
   };
 
@@ -89,7 +80,6 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     setFilterType('');
     setFilterDate('');
     setFilterRegion('');
-    setCurrentPage(1);
   };
 
   return (
@@ -135,9 +125,9 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
         </button>
       </div>
 
-      {currentItems.map((schedule) => (
+      {filteredSchedules.map((schedule) => (
         <div key={schedule.id} className={styles.scheduleItem}>
-          <h3>{new Date(schedule.date).toLocaleDateString()}</h3>
+          <h3>{businessDateToLocalDate(schedule.date).toLocaleDateString()}</h3>
           <p>Institution: {schedule.institutionName}</p>
           <p>Region: {schedule.region}</p>
           <p>Capacity: {schedule.capacity}</p>
@@ -165,21 +155,9 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
         </div>
       ))}
       
-      {currentItems.length === 0 && (
+      {filteredSchedules.length === 0 && (
         <p className={styles.noResults}>No schedules found matching your criteria.</p>
       )}
-
-      <div className={styles.pagination}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-          <button
-            key={pageNumber}
-            onClick={() => handlePageChange(pageNumber)}
-            className={currentPage === pageNumber ? styles.activePage : ''}
-          >
-            {pageNumber}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };

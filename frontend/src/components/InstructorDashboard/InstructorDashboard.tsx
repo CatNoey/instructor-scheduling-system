@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import { fetchAvailableSessions, applyForSession, cancelApplication, fetchInstructorApplications } from '../../store/sessionSlice';
@@ -12,23 +11,17 @@ import styles from './InstructorDashboard.module.css';
 
 const InstructorDashboard: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { availableSessions, instructorApplications, status } = useSelector((state: RootState) => state.sessions);
+  const { availableSessions, instructorApplications, applyingSessionIds, cancellingApplicationIds, error } = useSelector((state: RootState) => state.sessions);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== 'instructor') {
-      navigate('/admin-dashboard');
-      return;
-    }
-
     const fetchData = async () => {
       setLoading(true);
       try {
         await Promise.all([
-          dispatch(fetchAvailableSessions()),
-          dispatch(fetchInstructorApplications())
+          dispatch(fetchAvailableSessions()).unwrap(),
+          dispatch(fetchInstructorApplications()).unwrap(),
         ]);
       } catch (error) {
         showErrorNotification('Failed to fetch data');
@@ -38,37 +31,30 @@ const InstructorDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [dispatch, user, navigate]);
+  }, [dispatch, user]);
 
-  const handleApply = async (sessionId: string) => {
-    setLoading(true);
+  const handleApply = async (sessionId: number) => {
     try {
       await dispatch(applyForSession(sessionId)).unwrap();
       showSuccessNotification('Application submitted successfully');
-      await dispatch(fetchAvailableSessions());
-    } catch (error) {
-      showErrorNotification('Failed to submit application');
-    } finally {
-      setLoading(false);
+      await Promise.all([dispatch(fetchAvailableSessions()).unwrap(), dispatch(fetchInstructorApplications()).unwrap()]);
+    } catch (caught) {
+      showErrorNotification(caught instanceof Error ? caught.message : 'Failed to submit application');
     }
   };
 
-  const handleCancelApplication = async (applicationId: string) => {
-    setLoading(true);
+  const handleCancelApplication = async (applicationId: number) => {
     try {
       await dispatch(cancelApplication(applicationId)).unwrap();
       showSuccessNotification('Application cancelled successfully');
-      await dispatch(fetchInstructorApplications());
-    } catch (error) {
-      showErrorNotification('Failed to cancel application');
-    } finally {
-      setLoading(false);
+      await Promise.all([dispatch(fetchAvailableSessions()).unwrap(), dispatch(fetchInstructorApplications()).unwrap()]);
+    } catch (caught) {
+      showErrorNotification(caught instanceof Error ? caught.message : 'Failed to cancel application');
     }
   };
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
   };
 
   if (!user) {
@@ -77,10 +63,6 @@ const InstructorDashboard: React.FC = () => {
 
   if (user.role !== 'instructor') {
     return <div>You do not have permission to view this page. Your role is: {user.role}</div>;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
   }
 
   return (
@@ -92,6 +74,8 @@ const InstructorDashboard: React.FC = () => {
       </div>
 
       <h2>Available Sessions</h2>
+      {loading && <p>Loading available work...</p>}
+      {error && <p role="alert">{error}</p>}
       {availableSessions.length === 0 ? (
         <p>No available sessions at the moment.</p>
       ) : (
@@ -107,9 +91,9 @@ const InstructorDashboard: React.FC = () => {
               <button
                 onClick={() => handleApply(session.id)}
                 className={styles.applyButton}
-                disabled={loading}
+                disabled={applyingSessionIds.includes(session.id) || instructorApplications.some((application) => application.sessionId === session.id)}
               >
-                Apply
+                {applyingSessionIds.includes(session.id) ? 'Applying...' : 'Apply'}
               </button>
             </li>
           ))}
@@ -133,9 +117,9 @@ const InstructorDashboard: React.FC = () => {
                 <button
                   onClick={() => handleCancelApplication(application.id)}
                   className={styles.cancelButton}
-                  disabled={loading}
+                  disabled={cancellingApplicationIds.includes(application.id)}
                 >
-                  Cancel
+                  {cancellingApplicationIds.includes(application.id) ? 'Cancelling...' : 'Cancel'}
                 </button>
               )}
             </li>

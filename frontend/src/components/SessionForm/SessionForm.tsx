@@ -1,171 +1,61 @@
-// src/components/SessionForm/SessionForm.tsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store';
 import { addSession, updateSession } from '../../store/sessionSlice';
-import { Session, TrainingType } from '../../types';
-import { showSuccessNotification, showErrorNotification } from '../../utils/notifications';
+import { Session, SessionInput, TrainingType } from '../../types';
+import { localTimeToIso, isoToLocalTime } from '../../utils/dateTime';
+import { showErrorNotification, showSuccessNotification } from '../../utils/notifications';
 import styles from './SessionForm.module.css';
 
-interface SessionFormProps {
-  session?: Session;
-  scheduleId: string;
-  onClose: () => void;
-}
+interface SessionFormProps { session?: Session; scheduleId: number; scheduleDate: string; onClose: () => void; }
+interface FormData { startTime: string; endTime: string; instructor: string; notes: string; trainingType: TrainingType; }
+const emptyForm: FormData = { startTime: '', endTime: '', instructor: '', notes: '', trainingType: 'class' };
 
-const initialFormState: Omit<Session, 'id'> = {
-  scheduleId: '',
-  startTime: '',
-  endTime: '',
-  instructor: '',
-  notes: '',
-  trainingType: 'class' as TrainingType, // Add this line
-};
+const fromSession = (session?: Session): FormData => session ? {
+  startTime: isoToLocalTime(session.startTime), endTime: isoToLocalTime(session.endTime), instructor: session.instructor,
+  notes: session.notes || '', trainingType: session.trainingType,
+} : emptyForm;
 
-const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, onClose }) => {
-  const [formData, setFormData] = useState<Omit<Session, 'id'>>(
-    session ? { ...session } : { ...initialFormState, scheduleId }
-  );
-  const [errors, setErrors] = useState<Partial<Record<keyof Session, string>>>({});
+const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, scheduleDate, onClose }) => {
+  const [formData, setFormData] = useState<FormData>(() => fromSession(session));
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch: AppDispatch = useDispatch();
 
-  useEffect(() => {
-    if (session) {
-      setFormData({ ...session });
-    } else {
-      setFormData(prev => ({ ...prev, scheduleId }));
-    }
-  }, [session, scheduleId]);
-
-  const validateForm = () => {
-    const newErrors: Partial<Record<keyof Session, string>> = {};
-    if (!formData.startTime) newErrors.startTime = 'Start time is required';
-    if (!formData.endTime) newErrors.endTime = 'End time is required';
-    if (!formData.instructor) newErrors.instructor = 'Instructor is required';
-    if (!formData.trainingType) newErrors.trainingType = 'Training type is required';
-    
-    // Check if end time is after start time
-    if (formData.startTime && formData.endTime) {
-      const start = new Date(`2000-01-01T${formData.startTime}`);
-      const end = new Date(`2000-01-01T${formData.endTime}`);
-      if (end <= start) {
-        newErrors.endTime = 'End time must be after start time';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  useEffect(() => setFormData(fromSession(session)), [session]);
+  const change = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+    setError(null);
   };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear the error for this field when the user starts typing
-    setErrors(prev => ({ ...prev, [name]: undefined }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const startTime = localTimeToIso(scheduleDate, formData.startTime);
+      const endTime = localTimeToIso(scheduleDate, formData.endTime);
+      if (new Date(endTime) <= new Date(startTime)) throw new Error('End time must be after start time');
       setIsSubmitting(true);
-      try {
-        if (session) {
-          await dispatch(updateSession({ ...formData, id: session.id })).unwrap();
-          showSuccessNotification('Session updated successfully');
-        } else {
-          await dispatch(addSession(formData)).unwrap();
-          showSuccessNotification('Session added successfully');
-        }
-        onClose();
-      } catch (error) {
-        showErrorNotification(error instanceof Error ? error.message : 'An error occurred');
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
+      const payload: SessionInput = { ...formData, notes: formData.notes || null, scheduleId, startTime, endTime };
+      if (session) await dispatch(updateSession({ ...payload, id: session.id })).unwrap();
+      else await dispatch(addSession(payload)).unwrap();
+      showSuccessNotification(session ? 'Session updated successfully' : 'Session added successfully');
+      onClose();
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Unable to save the session';
+      setError(message);
+      showErrorNotification(message);
+    } finally { setIsSubmitting(false); }
   };
-
-  return (
-    <form onSubmit={handleSubmit} className={styles.sessionForm}>
-      <h2>{session ? 'Edit Session' : 'Add New Session'}</h2>
-      
-      <div className={styles.formGroup}>
-        <label htmlFor="startTime">Start Time:</label>
-        <input
-          type="time"
-          id="startTime"
-          name="startTime"
-          value={formData.startTime}
-          onChange={handleChange}
-          required
-        />
-        {errors.startTime && <span className={styles.error}>{errors.startTime}</span>}
-      </div>
-
-      <div className={styles.formGroup}>
-        <label htmlFor="endTime">End Time:</label>
-        <input
-          type="time"
-          id="endTime"
-          name="endTime"
-          value={formData.endTime}
-          onChange={handleChange}
-          required
-        />
-        {errors.endTime && <span className={styles.error}>{errors.endTime}</span>}
-      </div>
-
-      <div className={styles.formGroup}>
-        <label htmlFor="instructor">Instructor:</label>
-        <input
-          type="text"
-          id="instructor"
-          name="instructor"
-          value={formData.instructor}
-          onChange={handleChange}
-          required
-        />
-        {errors.instructor && <span className={styles.error}>{errors.instructor}</span>}
-      </div>
-
-      <div className={styles.formGroup}>
-        <label htmlFor="trainingType">Training Type:</label>
-        <select
-          id="trainingType"
-          name="trainingType"
-          value={formData.trainingType}
-          onChange={handleChange}
-          required
-        >
-          <option value="class">Class</option>
-          <option value="teacher">Teacher</option>
-          <option value="all_staff">All Staff</option>
-          <option value="remote">Remote</option>
-          <option value="other">Other</option>
-        </select>
-        {errors.trainingType && <span className={styles.error}>{errors.trainingType}</span>}
-      </div>
-
-      <div className={styles.formGroup}>
-        <label htmlFor="notes">Notes:</label>
-        <textarea
-          id="notes"
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div className={styles.formActions}>
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : session ? 'Update Session' : 'Add Session'}
-        </button>
-        <button type="button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
-      </div>
-    </form>
-  );
+  return <form onSubmit={handleSubmit} className={styles.sessionForm}>
+    <h2>{session ? 'Edit Session' : 'Add New Session'}</h2>
+    <p>Times use this browser's local timezone. A fixed business timezone has not yet been selected.</p>
+    {error && <p className={styles.error} role="alert">{error}</p>}
+    <div className={styles.formGroup}><label htmlFor="startTime">Start Time:</label><input type="time" id="startTime" name="startTime" value={formData.startTime} onChange={change} required /></div>
+    <div className={styles.formGroup}><label htmlFor="endTime">End Time:</label><input type="time" id="endTime" name="endTime" value={formData.endTime} onChange={change} required /></div>
+    <div className={styles.formGroup}><label htmlFor="instructor">Instructor:</label><input type="text" id="instructor" name="instructor" value={formData.instructor} onChange={change} required /></div>
+    <div className={styles.formGroup}><label htmlFor="trainingType">Training Type:</label><select id="trainingType" name="trainingType" value={formData.trainingType} onChange={change} required><option value="class">Class</option><option value="teacher">Teacher</option><option value="all_staff">All Staff</option><option value="remote">Remote</option><option value="other">Other</option></select></div>
+    <div className={styles.formGroup}><label htmlFor="notes">Notes:</label><textarea id="notes" name="notes" value={formData.notes} onChange={change} /></div>
+    <div className={styles.formActions}><button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : session ? 'Update Session' : 'Add Session'}</button><button type="button" onClick={onClose} disabled={isSubmitting}>Cancel</button></div>
+  </form>;
 };
-
 export default SessionForm;

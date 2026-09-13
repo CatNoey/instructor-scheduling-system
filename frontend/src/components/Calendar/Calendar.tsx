@@ -1,29 +1,18 @@
 // src/components/Calendar/Calendar.tsx
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Schedule } from '../../types';
-import { UserRole } from '../../utils/permissions';
 import styles from './Calendar.module.css';
 
 interface CalendarProps {
   schedules: Schedule[];
   onDateSelect: (date: Date) => void;
-  userRole: UserRole;
-  canViewTeamLeaderSchedules: boolean;
+  userRole: 'admin' | 'instructor';
 }
 
-const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, canViewTeamLeaderSchedules }) => {
+const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    console.log('Schedules received in Calendar:', schedules);
-    console.log('Number of schedules:', schedules.length);
-    if (schedules.length > 0) {
-      console.log('First schedule:', schedules[0]);
-      console.log('Last schedule:', schedules[schedules.length - 1]);
-    }
-  }, [schedules]);
-  
   const currentMonthSchedules = useMemo(() => {
     return schedules;
   }, [schedules]);
@@ -44,7 +33,8 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const isToday = date.toDateString() === new Date().toDateString();
     const hasSchedule = currentMonthSchedules.some(schedule => {
-      const scheduleDate = new Date(schedule.date);
+      const [year, month, day] = schedule.date.split('-').map(Number);
+      const scheduleDate = new Date(year, month - 1, day);
       return scheduleDate.toDateString() === date.toDateString();
     });
   
@@ -62,7 +52,8 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const daySchedules = currentMonthSchedules.filter(schedule => {
-        const scheduleDate = new Date(schedule.date);
+        const [year, month, day] = schedule.date.split('-').map(Number);
+        const scheduleDate = new Date(year, month - 1, day);
         return scheduleDate.toDateString() === date.toDateString();
       });
   
@@ -77,9 +68,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
             <div
               key={schedule.id}
               className={`${styles.scheduleIndicator} ${
-                userRole === 'team_leader' || new Date() > new Date(new Date(schedule.date).getTime() + 24 * 60 * 60 * 1000) 
-                  ? '' 
-                  : styles.teamLeaderOnly
+              ''
               }`}
               title={`${schedule.institutionName} - ${schedule.trainingType}`}
             ></div>
