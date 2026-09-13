@@ -57,9 +57,7 @@ User.beforeCreate(async (user: User) => {
   user.password = await bcryptjs.hash(user.password, salt);
 });
 
-export const createUser = async (userData: Omit<UserAttributes, 'id'>): Promise<User> => {
-  return await User.create(userData);
-};
+export const createUser = (userData: Omit<UserAttributes, 'id'>): Promise<User> => User.create(userData);
 
 export const getUserByUsername = async (username: string): Promise<User | null> => {
   return await User.findOne({ where: { username } });

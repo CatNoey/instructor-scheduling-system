@@ -17,22 +17,10 @@ export interface AuthResponse {
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    // This is a mock login function. Replace this with actual API call when ready.
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user: User = {
-          id: '1',
-          username: credentials.username,
-          email: `${credentials.username}@example.com`, // Mock email
-          role: 'admin', // or 'instructor', depending on your needs
-        };
-        const token = 'mock-jwt-token';
-        // Store user and token in localStorage for persistence
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
-        resolve({ user, token });
-      }, 1000); // Simulate network delay
-    });
+    const response = await axios.post<AuthResponse>(`${API_URL}/auth/login`, credentials);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem('token', response.data.token);
+    return response.data;
   },
 
   logout: async (): Promise<void> => {

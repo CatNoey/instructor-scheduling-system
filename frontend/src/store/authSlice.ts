@@ -3,7 +3,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import authService, { LoginCredentials } from '../services/authService';
 import { User } from '../types';
-import { UserRole, Permission, getPermissions } from '../utils/permissions';
+import { Permission, getPermissions } from '../utils/permissions';
 
 interface AuthState {
   user: User | null;
@@ -55,8 +55,8 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.isAuthenticated = true;
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.permissions = getPermissions(action.payload.role);
       })
       .addCase(login.rejected, (state, action) => {
@@ -64,8 +64,8 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(logout.fulfilled, (state) => {
-        state.isAuthenticated = false;
         state.user = null;
+        state.isAuthenticated = false;
         state.permissions = null;
       });
   },

@@ -30,3 +30,10 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     return res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+export const requireRole = (...roles: string[]) => (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ message: 'You do not have permission to perform this action' });
+  }
+  next();
+};

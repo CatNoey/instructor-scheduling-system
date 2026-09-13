@@ -23,8 +23,8 @@ router.use(verifyToken);
 // Apply isInstructor middleware to all routes
 router.use(isInstructor);
 
-router.get('/available-sessions', controller.getAvailableSessions.bind(controller));
-router.post('/sessions/:scheduleId/apply', controller.applyForSession.bind(controller));
+router.get('/sessions/available', controller.getAvailableSessions.bind(controller));
+router.post('/sessions/:sessionId/apply', controller.applyForSession.bind(controller));
 router.delete('/applications/:applicationId', controller.cancelApplication.bind(controller));
 router.get('/applications', controller.getInstructorApplications.bind(controller));
 

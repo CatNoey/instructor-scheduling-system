@@ -5,8 +5,10 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import scheduleRoutes from './routes/scheduleRoutes';
+import instructorApplicationRoutes from './routes/instructorApplicationRoutes';
 import sequelize from './config/database';
 import path from 'path';
+import './models/associations';
 
 console.log('Current working directory:', process.cwd());
 console.log('Attempting to load .env file from:', path.resolve(process.cwd(), '.env'));
@@ -39,6 +41,11 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/schedules', scheduleRoutes);
+app.use('/api', instructorApplicationRoutes);
+
+app.get('/', (req, res) => {
+  res.json({ message: "Welcome to the Instructor Scheduling System API" });
+});
 
 const port = process.env.PORT || 3000;
 

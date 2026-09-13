@@ -1,11 +1,11 @@
-//src/components/InstructorDashboard/InstructorDashboard.tsx
+// src/components/InstructorDashboard/InstructorDashboard.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
-import { fetchAvailableSessions, applyForSession, cancelApplication } from '../../store/sessionSlice';
+import { fetchAvailableSessions, applyForSession, cancelApplication, fetchInstructorApplications } from '../../store/sessionSlice';
 import { showSuccessNotification, showErrorNotification } from '../../utils/notifications';
 import { Session, InstructorApplication } from '../../types';
 import styles from './InstructorDashboard.module.css';
@@ -15,26 +15,54 @@ const InstructorDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const { availableSessions, instructorApplications, status } = useSelector((state: RootState) => state.sessions);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchAvailableSessions());
-  }, [dispatch]);
+    if (user && user.role !== 'instructor') {
+      navigate('/admin-dashboard');
+      return;
+    }
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          dispatch(fetchAvailableSessions()),
+          dispatch(fetchInstructorApplications())
+        ]);
+      } catch (error) {
+        showErrorNotification('Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [dispatch, user, navigate]);
 
   const handleApply = async (sessionId: string) => {
+    setLoading(true);
     try {
       await dispatch(applyForSession(sessionId)).unwrap();
       showSuccessNotification('Application submitted successfully');
+      await dispatch(fetchAvailableSessions());
     } catch (error) {
       showErrorNotification('Failed to submit application');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancelApplication = async (applicationId: string) => {
+    setLoading(true);
     try {
       await dispatch(cancelApplication(applicationId)).unwrap();
       showSuccessNotification('Application cancelled successfully');
+      await dispatch(fetchInstructorApplications());
     } catch (error) {
       showErrorNotification('Failed to cancel application');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,7 +75,11 @@ const InstructorDashboard: React.FC = () => {
     return <div>You must be logged in to view this page.</div>;
   }
 
-  if (status === 'loading') {
+  if (user.role !== 'instructor') {
+    return <div>You do not have permission to view this page. Your role is: {user.role}</div>;
+  }
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 
@@ -60,35 +92,56 @@ const InstructorDashboard: React.FC = () => {
       </div>
 
       <h2>Available Sessions</h2>
-      <ul className={styles.sessionList}>
-        {availableSessions.map((session: Session) => (
-          <li key={session.id} className={styles.sessionItem}>
-            <div className={styles.sessionInfo}>
-              <h3>{session.testName}</h3>
-              <p>Date: {new Date(session.startTime).toLocaleDateString()}</p>
-              <p>Time: {new Date(session.startTime).toLocaleTimeString()} - {new Date(session.endTime).toLocaleTimeString()}</p>
-              <p>Type: {session.trainingType}</p>
+      {availableSessions.length === 0 ? (
+        <p>No available sessions at the moment.</p>
+      ) : (
+        <ul className={styles.sessionList}>
+          {availableSessions.map((session: Session) => (
+            <li key={session.id} className={styles.sessionItem}>
+              <div className={styles.sessionInfo}>
+                <h3>{session.instructor || `Session #${session.id}`}</h3>
+                <p>Date: {new Date(session.startTime).toLocaleDateString()}</p>
+                <p>Time: {new Date(session.startTime).toLocaleTimeString()} - {new Date(session.endTime).toLocaleTimeString()}</p>
+                <p>Type: {session.trainingType}</p>
               </div>
-            <button onClick={() => handleApply(session.id)} className={styles.applyButton}>Apply</button>
+              <button
+                onClick={() => handleApply(session.id)}
+                className={styles.applyButton}
+                disabled={loading}
+              >
+                Apply
+              </button>
             </li>
-        ))}
-      </ul>
+          ))}
+        </ul>
+      )}
 
       <h2>My Applications</h2>
-      <ul className={styles.applicationList}>
-        {instructorApplications.map((application: InstructorApplication) => (
-          <li key={application.id} className={styles.applicationItem}>
-            <div className={styles.applicationInfo}>
-              <h3>{application.session.testName}</h3>
-              <p>Date: {new Date(application.session.startTime).toLocaleDateString()}</p>
-              <p>Status: {application.status}</p>
-            </div>
-            {application.status === 'pending' && (
-              <button onClick={() => handleCancelApplication(application.id)} className={styles.cancelButton}>Cancel</button>
-            )}
-          </li>
-        ))}
-      </ul>
+      {instructorApplications.length === 0 ? (
+        <p>You haven't applied for any sessions yet.</p>
+      ) : (
+        <ul className={styles.applicationList}>
+          {instructorApplications.map((application: InstructorApplication) => (
+            <li key={application.id} className={styles.applicationItem}>
+              <div className={styles.applicationInfo}>
+                <h3>{application.session.instructor || `Session #${application.session.id}`}</h3>
+                <p>Date: {new Date(application.session.startTime).toLocaleDateString()}</p>
+                <p>Time: {new Date(application.session.startTime).toLocaleTimeString()} - {new Date(application.session.endTime).toLocaleTimeString()}</p>
+                <p>Status: {application.status}</p>
+              </div>
+              {application.status === 'pending' && (
+                <button
+                  onClick={() => handleCancelApplication(application.id)}
+                  className={styles.cancelButton}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

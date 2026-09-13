@@ -20,11 +20,19 @@ npm run build
 npm run dev
 ```
 
-`npm run dev`는 프론트엔드(3001)와 백엔드(기본 3000)를 함께 실행하며 종료 시 자식 프로세스도 종료합니다. 개별 실행은 `npm run dev:frontend`, `npm run dev:backend`입니다. 현재 백엔드 타입 오류와 기능 미구현 때문에 위 명령의 전체 성공 또는 서비스 정상 동작을 보장하지 않습니다. 자세한 내용은 ASSESSMENT.md를 참고하세요.
+`npm run dev`는 프론트엔드(3001)와 백엔드(기본 3000)를 함께 실행하며 종료 시 자식 프로세스도 종료합니다. 개별 실행은 `npm run dev:frontend`, `npm run dev:backend`입니다.
 
-설정은 `frontend/.env`와 `backend/.env`에서 각각 읽습니다. 로컬 원본의 환경 파일은 내용 변경 없이 보존했습니다. 새 환경의 백엔드 설정은 `backend/.env.example`을 참고하세요. 프론트엔드 API 클라이언트는 `REACT_APP_API_BASE_URL=http://localhost:3000/api`를 사용합니다. 별도의 authService는 아직 모의 구현이며 API 연결이 필요합니다.
+설정은 `frontend/.env`와 `backend/.env`에서 각각 읽습니다. 로컬 원본의 환경 파일은 내용 변경 없이 보존했습니다. 새 환경의 백엔드 설정은 `backend/.env.example`을 참고하세요. 프론트엔드 API 클라이언트는 `REACT_APP_API_BASE_URL=http://localhost:3000/api`를 사용합니다.
 
-백엔드 시작 시 `sequelize.sync({ alter: true })`가 실행됩니다. 재개발 시 전용 개발 DB를 사용하고 테스트 DB를 분리하세요. 현재 테스트에는 일정 전체 삭제 코드가 포함돼 있어 루트 자동 검사 명령에 포함하지 않았습니다.
+백엔드 시작 시 `sequelize.sync({ alter: true })`가 실행됩니다. 재개발 시 전용 개발 DB를 사용하고 테스트 DB를 분리하세요. 로그인(JWT), 관리자 일정·세션 CRUD, 강사 세션 지원·취소·조회 흐름을 제공합니다. API 요청은 토큰이 필요한 경로에 자동으로 Bearer 토큰을 포함합니다.
+
+## 검증
+
+```sh
+npm run typecheck
+npm run build
+npm --prefix backend test -- --runInBand
+```
 
 ## 통합 이력
 

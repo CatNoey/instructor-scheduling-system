@@ -11,6 +11,7 @@ import {
   applyForSession as applyForSessionApi,
   cancelApplication as cancelApplicationApi
 } from '../services/api';
+import { getInstructorApplications } from '../services/api';
 
 interface SessionState {
   items: Session[];
@@ -126,6 +127,21 @@ export const deleteSession = createAsyncThunk<{ scheduleId: string, sessionId: s
   }
 );
 
+export const fetchInstructorApplications = createAsyncThunk<InstructorApplication[], void, { rejectValue: string }>(
+  'sessions/fetchInstructorApplications',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getInstructorApplications();
+      if (!response.data) {
+        return rejectWithValue('No applications found');
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch instructor applications');
+    }
+  }
+);
+
 const sessionSlice = createSlice({
   name: 'sessions',
   initialState,
@@ -169,6 +185,9 @@ const sessionSlice = createSlice({
       })
       .addCase(deleteSession.fulfilled, (state, action: PayloadAction<{ scheduleId: string, sessionId: string }>) => {
         state.items = state.items.filter(session => session.id !== action.payload.sessionId);
+      })
+      .addCase(fetchInstructorApplications.fulfilled, (state, action: PayloadAction<InstructorApplication[]>) => {
+        state.instructorApplications = action.payload;
       });
   },
 });

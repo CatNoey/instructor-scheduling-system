@@ -1,29 +1,15 @@
-import pool from './database';
-
-const createUsersTable = `
-  CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL
-  )
-`;
+import sequelize from './database';
 
 const runMigration = async () => {
   try {
-    const client = await pool.connect();
-    try {
-      await client.query(createUsersTable);
-      console.log('Migration completed successfully');
-    } finally {
-      client.release();
-    }
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log('Migration completed successfully');
   } catch (error) {
     console.error('Error running migration:', error);
   } finally {
-    await pool.end();
+    await sequelize.close();
   }
 };
 
-runMigration();
+void runMigration();

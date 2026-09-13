@@ -10,6 +10,12 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -31,7 +37,7 @@ const handleApiError = (error: unknown, operation: string) => {
     console.error('Axios error details:', axiosError.response?.data);
     console.error('Axios error status:', axiosError.response?.status);
     console.error('Axios error headers:', axiosError.response?.headers);
-    throw new Error(axiosError.response?.data?.error?.message || `Failed to ${operation}`);
+    throw new Error(axiosError.response?.data?.error?.message || (axiosError.response?.data as any)?.message || `Failed to ${operation}`);
   }
   throw error;
 };
@@ -106,13 +112,15 @@ export const getSessions = async (
 };
 
 export const createSession = async (session: Omit<Session, 'id'>): Promise<Session> => {
-  const response = await api.post<Session>(`/schedules/${session.scheduleId}/sessions`, session);
-  return response.data;
+  const response = await api.post<ApiResponse<Session>>(`/schedules/${session.scheduleId}/sessions`, session);
+  if (!response.data.data) throw new Error(response.data.error?.message || 'Failed to create session');
+  return response.data.data;
 };
 
 export const updateSession = async (session: Session): Promise<Session> => {
-  const response = await api.put<Session>(`/schedules/${session.scheduleId}/sessions/${session.id}`, session);
-  return response.data;
+  const response = await api.put<ApiResponse<Session>>(`/schedules/${session.scheduleId}/sessions/${session.id}`, session);
+  if (!response.data.data) throw new Error(response.data.error?.message || 'Failed to update session');
+  return response.data.data;
 };
 
 export const deleteSession = async (scheduleId: string, sessionId: string): Promise<void> => {
@@ -143,6 +151,15 @@ export const cancelApplication = async (applicationId: string): Promise<ApiRespo
     return response.data;
   } catch (error) {
     return handleApiError(error, 'cancel application');
+  }
+};
+
+export const getInstructorApplications = async (): Promise<ApiResponseType<InstructorApplication[]>> => {
+  try {
+    const response: AxiosResponse<ApiResponseType<InstructorApplication[]>> = await api.get('/applications');
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'fetch instructor applications');
   }
 };
 

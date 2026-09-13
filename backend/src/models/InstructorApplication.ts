@@ -7,14 +7,14 @@ export interface InstructorApplicationAttributes {
   id: CreationOptional<number>;
   status: 'pending' | 'approved' | 'rejected';
   instructorId: number;
-  scheduleId: number;
+  sessionId: number;
 }
 
 class InstructorApplication extends Model<InferAttributes<InstructorApplication>, InferCreationAttributes<InstructorApplication>> implements InstructorApplicationAttributes {
   declare id: CreationOptional<number>;
   declare status: 'pending' | 'approved' | 'rejected';
   declare instructorId: number;
-  declare scheduleId: number;
+  declare sessionId: number;
 }
 
 InstructorApplication.init(
@@ -33,7 +33,7 @@ InstructorApplication.init(
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
-    scheduleId: {
+    sessionId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
