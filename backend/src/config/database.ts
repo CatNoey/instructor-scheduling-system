@@ -1,19 +1,14 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-import path from 'path';
+import './env';
 
-console.log('Current working directory:', process.cwd());
-console.log('Attempting to load .env file from:', path.resolve(process.cwd(), '.env'));
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+const testDatabaseName = process.env.TEST_DB_NAME || 'instructor_scheduling_test';
 
-dotenv.config();
+if (isTestEnvironment && process.env.DB_NAME !== testDatabaseName) {
+  throw new Error('Tests must use the dedicated TEST_DB_NAME database');
+}
 
-console.log('Database configuration:', {
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-});
-
+/** Constructing Sequelize does not connect; server.ts owns connection lifecycle. */
 const sequelize = new Sequelize({
   dialect: 'postgres',
   host: process.env.DB_HOST,
@@ -21,15 +16,7 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  logging: console.log,
+  logging: false,
 });
-
-sequelize.authenticate()
-  .then(() => {
-    console.log('Database connection has been established successfully.');
-  })
-  .catch((err) => {
-    console.error('Unable to connect to the database:', err);
-  });
 
 export default sequelize;

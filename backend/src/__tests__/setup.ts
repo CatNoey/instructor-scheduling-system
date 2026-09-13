@@ -1,0 +1,9 @@
+process.env.NODE_ENV = 'test';
+process.env.TEST_DB_NAME = process.env.TEST_DB_NAME || 'instructor_scheduling_test';
+process.env.DB_NAME = process.env.TEST_DB_NAME;
+process.env.DB_HOST = '127.0.0.1';
+process.env.DB_PORT = '5432';
+process.env.DB_USER = 'test';
+process.env.DB_PASSWORD = 'test';
+process.env.JWT_SECRET = 'test-jwt-secret-that-is-at-least-thirty-two-characters';
+process.env.CORS_ALLOWED_ORIGINS = 'http://localhost:3001';
