@@ -32,15 +32,22 @@ InstructorApplication.init(
     instructorId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: { model: 'Users', key: 'id' },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
     sessionId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: { model: 'Sessions', key: 'id' },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
   },
   {
     sequelize,
     modelName: 'InstructorApplication',
+    indexes: [{ unique: true, fields: ['instructorId', 'sessionId'], name: 'instructor_applications_instructor_session_unique' }],
   }
 );
 
