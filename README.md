@@ -1,44 +1,50 @@
 # Instructor Scheduling
 
-강사 일정 관리 시스템의 프론트엔드와 백엔드를 한 저장소로 통합한 프로젝트입니다.
+관리자가 일정과 세션을 관리하고, 강사가 열린 세션에 지원하거나 본인 지원을 취소하는 MVP입니다. 역할은 `admin`, `instructor` 두 가지만 지원합니다. 승인·배정·정산·추가 역할은 이 MVP 범위에 포함하지 않습니다.
 
-## 구조
+## 빠른 실행
 
-- `frontend/`: React, Redux Toolkit, TypeScript, Create React App
-- `backend/`: Express, TypeScript, Sequelize, PostgreSQL
-- `ASSESSMENT.md`: 2026-09-08 기준 구현 상태와 검증 결과
-- `instructor-scheduling.code-workspace`: 전체 프로젝트를 여는 편집기 워크스페이스
-
-## 설치와 실행
-
-Node.js와 npm, 개발용 PostgreSQL이 필요합니다.
+Node.js와 PostgreSQL이 필요합니다. 비밀값이 담긴 기존 환경 파일은 복사하거나 공유하지 말고, 각 예시 파일에서 새 환경을 만드세요.
 
 ```sh
 npm run install:all
-npm run typecheck
-npm run build
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+npm run migrate
 npm run dev
 ```
 
-`npm run dev`는 프론트엔드(3001)와 백엔드(기본 3000)를 함께 실행하며 종료 시 자식 프로세스도 종료합니다. 개별 실행은 `npm run dev:frontend`, `npm run dev:backend`입니다.
+- 프런트엔드는 기본 `http://localhost:3001`입니다.
+- API는 기본 `http://localhost:3000/api`입니다.
+- 서버 시작은 스키마를 변경하지 않습니다. `npm run migrate`를 명시적으로 실행합니다.
+- `npm run dev`는 두 서버를 함께 종료합니다. 개별 실행은 `npm run dev:frontend`, `npm run dev:backend`입니다.
 
-설정은 `frontend/.env`와 `backend/.env`에서 각각 읽습니다. 로컬 원본의 환경 파일은 내용 변경 없이 보존했습니다. 새 환경의 백엔드 설정은 `backend/.env.example`을 참고하세요. 프론트엔드 API 클라이언트는 `REACT_APP_API_BASE_URL=http://localhost:3000/api`를 사용합니다.
+## 데이터·API 계약
 
-백엔드 시작 시 `sequelize.sync({ alter: true })`가 실행됩니다. 재개발 시 전용 개발 DB를 사용하고 테스트 DB를 분리하세요. 로그인(JWT), 관리자 일정·세션 CRUD, 강사 세션 지원·취소·조회 흐름을 제공합니다. API 요청은 토큰이 필요한 경로에 자동으로 Bearer 토큰을 포함합니다.
+- 모든 JSON 식별자와 JWT의 `userId`는 숫자입니다.
+- `Schedule.date`는 업무 날짜(`YYYY-MM-DD`)입니다. `Session.startTime`/`endTime`은 명시적 UTC 오프셋이 포함된 ISO timestamp로 요청하고, API는 UTC ISO timestamp로 반환합니다.
+- 프런트엔드는 날짜와 시간을 결합할 때 우선 브라우저의 현지 시간대를 사용합니다. 조직 고정 업무 시간대가 필요하면 운영 전 별도 결정을 해야 합니다.
+- 로그인 성공 응답은 호환성을 위해 `{ token, user }`를 유지합니다. 그 밖의 성공 응답은 `{ success: true, data }`, 오류 응답은 `{ success: false, error: { code, message } }`입니다.
+- 생성·수정은 허용된 입력 필드만 처리합니다. 역할, ID, 부모 ID 같은 서버 관리 필드는 요청으로 바꿀 수 없습니다.
+- 목록 API는 이번 MVP에서 페이지네이션을 제공하지 않습니다. `page`/`pageSize` 응답 계약도 없습니다.
 
 ## 검증
 
 ```sh
 npm run typecheck
 npm run build
-npm --prefix backend test -- --runInBand
+npm run test
 ```
 
-## 통합 이력
+통합 테스트는 별도 PostgreSQL 데이터베이스를 사용해야 합니다. CI는 일회용 PostgreSQL 서비스와 `NODE_ENV=test`를 사용하며, 개발·운영 DB에는 마이그레이션을 적용하지 않습니다.
 
-두 원본 저장소의 HEAD를 부모로 하는 통합 커밋을 생성했습니다. `legacy-frontend`, `legacy-backend` 브랜치에서 기존 이력을 볼 수 있습니다. 기존 미커밋 변경 7개 파일은 각 하위 폴더에서 미커밋 상태로 유지했습니다. 원본 저장소는 다음 경로에 그대로 남아 있습니다.
+## 운영 전 점검
 
-- `/Users/youngtak/Projects/instructor-scheduling-system`
-- `/Users/youngtak/Projects/instructor-scheduling-backend`
+배포나 기존 DB 전환은 이 저장소에서 자동으로 수행하지 않습니다. 실제 배포 전에 다음을 검토하세요.
 
-앞으로 수정할 통합본 경로는 `/Users/youngtak/Projects/instructor-scheduling`입니다. 이 통합은 폴더·Git·실행 진입점을 정리한 것이며, 기존 업무 기능을 새로 완성한 작업은 아닙니다. 의존성은 용량이 큰 기존 node_modules를 복제하지 않았으므로 최초 사용 시 `npm run install:all`로 설치하세요.
+- 배포 대상·비용·도메인·HTTPS
+- 토큰 보관/폐기 정책과 CORS 허용 출처
+- 기존 DB 보존·전환 계획과 백업/복구 리허설
+- 고정 업무 시간대, 세션 정원 의미, 삭제 이력 보존, 계정 발급 방식
+
+현재 구현 상태와 과거 점검 결과는 [ASSESSMENT.md](ASSESSMENT.md)에 분리해 기록합니다.
