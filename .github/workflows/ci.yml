@@ -12,8 +12,8 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: instructor_test
-          POSTGRES_PASSWORD: instructor_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
           POSTGRES_DB: instructor_scheduling_test
         ports: [5432:5432]
         options: >-
@@ -26,8 +26,8 @@ jobs:
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
       DB_NAME: instructor_scheduling_test
-      DB_USER: instructor_test
-      DB_PASSWORD: instructor_test
+      DB_USER: test
+      DB_PASSWORD: test
       JWT_SECRET: test-only-secret-not-for-production
     steps:
       - uses: actions/checkout@v4
