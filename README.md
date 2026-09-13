@@ -10,6 +10,7 @@ Node.js와 PostgreSQL이 필요합니다. 비밀값이 담긴 기존 환경 파�
 npm run install:all
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
+# backend/.env의 your_* 값을 개발용 PostgreSQL과 32자 이상 JWT 비밀값으로 교체
 npm run migrate
 npm run dev
 ```
@@ -18,6 +19,7 @@ npm run dev
 - API는 기본 `http://localhost:3000/api`입니다.
 - 서버 시작은 스키마를 변경하지 않습니다. `npm run migrate`를 명시적으로 실행합니다.
 - `npm run dev`는 두 서버를 함께 종료합니다. 개별 실행은 `npm run dev:frontend`, `npm run dev:backend`입니다.
+- 초기 관리자 계정은 공개 가입으로 만들 수 없습니다. 환경 변수로 값을 전달해 `npm --prefix backend run create:admin`을 한 번 실행합니다.
 
 ## 데이터·API 계약
 
