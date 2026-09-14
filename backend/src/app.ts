@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import authRoutes from './routes/auth';
 import instructorApplicationRoutes from './routes/instructorApplicationRoutes';
+import adminApplicationRoutes from './routes/adminApplicationRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
 import { sendError } from './middleware/errorResponse';
 import './models/associations';
@@ -35,6 +36,7 @@ export const createApp = ({
 
   app.use('/api/auth', authRoutes);
   app.use('/api/schedules', scheduleRoutes);
+  app.use('/api', adminApplicationRoutes);
   app.use('/api', instructorApplicationRoutes);
 
   app.get('/', (_req, res) => res.json({ success: true, data: { message: 'Instructor Scheduling API' } }));

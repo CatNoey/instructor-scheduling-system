@@ -52,7 +52,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
     if (!formData.date) newErrors.date = '일정을 선택해 주세요.';
     if (!formData.institutionName) newErrors.institutionName = '기관명을 입력해 주세요.';
     if (!formData.region) newErrors.region = '지역을 입력해 주세요.';
-    if (formData.capacity <= 0) newErrors.capacity = '정원은 1명 이상이어야 합니다.';
+    if (formData.capacity <= 0) newErrors.capacity = '필요 배정 인원은 1명 이상이어야 합니다.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -130,7 +130,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="capacity">입력 정원</label>
+        <label htmlFor="capacity">필요 배정 인원</label>
         <input
           type="number"
           id="capacity"
@@ -141,7 +141,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
           min="1"
         />
         {errors.capacity && <span className={styles.error} role="alert">{errors.capacity}</span>}
-        <p className={styles.helpText}>지원 가능 인원 제한은 운영 정책 확정 후 적용됩니다.</p>
+        <p className={styles.helpText}>이 일정에서 관리자가 최종 승인할 수 있는 강사 수입니다. 신청은 접수 순서대로 검토할 수 있습니다.</p>
       </div>
 
       <div className={styles.formGroup}>

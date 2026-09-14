@@ -179,6 +179,7 @@ const ScheduleManagement: React.FC = () => {
           scheduleDate={selectedSchedule.date}
           canEdit={permissions.editSessions}
           canDelete={permissions.deleteSessions}
+          capacity={selectedSchedule.capacity}
         />
       )}
     </div>

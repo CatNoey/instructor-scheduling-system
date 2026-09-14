@@ -8,7 +8,7 @@ import { fetchAvailableSessions, applyForSession, cancelApplication, fetchInstru
 import { showSuccessNotification, showErrorNotification } from '../../utils/notifications';
 import { Session, InstructorApplication } from '../../types';
 import styles from './InstructorDashboard.module.css';
-import { formatTime, trainingTypeLabel } from '../../utils/presentation';
+import { applicationStatusLabel, formatTime, trainingTypeLabel } from '../../utils/presentation';
 
 const InstructorDashboard: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -112,7 +112,7 @@ const InstructorDashboard: React.FC = () => {
                 <h3>{application.session.instructor || `세션 #${application.session.id}`}</h3>
                 {application.session.schedule && <p><span>근무지</span>{application.session.schedule.institutionName} · {application.session.schedule.region}</p>}
                 <p><span>일시</span>{new Date(application.session.startTime).toLocaleDateString('ko-KR')} · {formatTime(application.session.startTime)}–{formatTime(application.session.endTime)}</p>
-                <p><span>상태</span>지원 완료</p>
+                <p><span>상태</span>{applicationStatusLabel(application.status)}</p>
               </div>
               {application.status === 'pending' && (
                 <button

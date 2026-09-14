@@ -53,7 +53,7 @@ const SessionForm: React.FC<SessionFormProps> = ({ session, scheduleId, schedule
     {error && <p className={styles.error} role="alert">{error}</p>}
     <div className={styles.formGroup}><label htmlFor="startTime">시작 시각</label><input type="time" id="startTime" name="startTime" value={formData.startTime} onChange={change} required /></div>
     <div className={styles.formGroup}><label htmlFor="endTime">종료 시각</label><input type="time" id="endTime" name="endTime" value={formData.endTime} onChange={change} required /></div>
-    <div className={styles.formGroup}><label htmlFor="instructor">담당 강사</label><input type="text" id="instructor" name="instructor" value={formData.instructor} onChange={change} required /></div>
+    <div className={styles.formGroup}><label htmlFor="instructor">모집 담당자</label><input type="text" id="instructor" name="instructor" value={formData.instructor} onChange={change} required /></div>
     <div className={styles.formGroup}><label htmlFor="trainingType">교육 유형</label><select id="trainingType" name="trainingType" value={formData.trainingType} onChange={change} required>{(['class', 'teacher', 'all_staff', 'remote', 'other'] as const).map((type) => <option key={type} value={type}>{trainingTypeLabel(type)}</option>)}</select></div>
     <div className={styles.formGroup}><label htmlFor="notes">메모 <span className={styles.optional}>(선택)</span></label><textarea id="notes" name="notes" value={formData.notes} onChange={change} /></div>
     <div className={styles.formActions}><button type="submit" disabled={isSubmitting}>{isSubmitting ? '저장 중…' : session ? '수정 저장' : '세션 등록'}</button><button type="button" onClick={onClose} disabled={isSubmitting}>취소</button></div>

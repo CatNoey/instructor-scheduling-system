@@ -13,6 +13,8 @@ const koreanErrorMessage: Record<string, string> = {
   FORBIDDEN: '이 작업을 수행할 권한이 없습니다.',
   VALIDATION_ERROR: '입력 내용을 확인해 주세요.',
   CONFLICT: '현재 상태에서는 요청을 처리할 수 없습니다.',
+  CAPACITY_REACHED: '이 일정의 필요 배정 인원이 모두 채워졌습니다.',
+  TIME_CONFLICT: '이 강사는 겹치는 시간에 이미 배정되어 있습니다.',
   NOT_FOUND: '요청한 정보를 찾을 수 없습니다.',
   INTERNAL_ERROR: '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
 };
@@ -98,5 +100,13 @@ export const cancelApplication = async (applicationId: number): Promise<void> =>
 export const getInstructorApplications = async (): Promise<InstructorApplication[]> => {
   try { return unwrap((await api.get<ApiEnvelope<InstructorApplication[]>>('/applications')).data, '지원 내역을 불러오지 못했습니다.'); }
   catch (error) { throw new Error(messageFor(error, '지원 내역을 불러오지 못했습니다.')); }
+};
+export const getScheduleApplications = async (scheduleId: number): Promise<InstructorApplication[]> => {
+  try { return unwrap((await api.get<ApiEnvelope<InstructorApplication[]>>(`/schedules/${scheduleId}/applications`)).data, '지원 목록을 불러오지 못했습니다.'); }
+  catch (error) { throw new Error(messageFor(error, '지원 목록을 불러오지 못했습니다.')); }
+};
+export const reviewApplication = async (applicationId: number, status: InstructorApplication['status']): Promise<InstructorApplication> => {
+  try { return unwrap((await api.patch<ApiEnvelope<InstructorApplication>>(`/applications/${applicationId}/review`, { status })).data, '지원 상태를 변경하지 못했습니다.'); }
+  catch (error) { throw new Error(messageFor(error, '지원 상태를 변경하지 못했습니다.')); }
 };
 export default api;

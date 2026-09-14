@@ -24,7 +24,7 @@ export interface Session {
   startTime: string;
   /** UTC ISO timestamp returned by the API. */
   endTime: string;
-  /** Free-text instructor name. Account-based assignment is not in this MVP. */
+  /** Free-text contact or session label set by an administrator. */
   instructor: string;
   notes?: string | null;
   trainingType: TrainingType;
@@ -40,6 +40,8 @@ export interface InstructorApplication {
   instructorId: number;
   status: 'pending' | 'approved' | 'rejected';
   session: Session;
+  instructor?: Pick<User, 'id' | 'username' | 'email'>;
+  createdAt: string;
 }
 
 export interface ApiError { code: string; message: string; }

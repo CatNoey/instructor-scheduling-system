@@ -128,7 +128,7 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           <h3>{formatBusinessDate(schedule.date)}</h3>
           <p><span>기관</span>{schedule.institutionName}</p>
           <p><span>지역</span>{schedule.region}</p>
-          <p><span>입력 정원</span>{schedule.capacity}명</p>
+          <p><span>필요 배정 인원</span>{schedule.capacity}명</p>
           <p><span>교육 유형</span>{trainingTypeLabel(schedule.trainingType)}</p>
           <p><span>상태</span>{scheduleStatusLabel(schedule.status)}</p>
           <div className={styles.buttonContainer}>

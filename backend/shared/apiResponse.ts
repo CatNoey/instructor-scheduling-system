@@ -5,6 +5,8 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'FORBIDDEN'
   | 'CONFLICT'
+  | 'CAPACITY_REACHED'
+  | 'TIME_CONFLICT'
   | 'INTERNAL_ERROR';
 
 export type AsyncRequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>;
