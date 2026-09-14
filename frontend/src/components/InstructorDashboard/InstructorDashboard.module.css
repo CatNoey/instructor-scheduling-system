@@ -3,6 +3,7 @@
 .instructorDashboard h2 { margin: 2rem 0 0.8rem; font-size: 1.25rem; }
 .userInfo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; border: 1px solid #dbe3ed; border-radius: 12px; background: #fff; }
 .userInfo p { margin: 0; }
+.headerActions { display: flex; align-items: center; gap: 0.6rem; }
 .logoutButton, .cancelButton { background: var(--color-danger); color: #fff; }
 .logoutButton:hover, .cancelButton:hover { background: var(--color-danger-hover); }
 .sessionList, .applicationList { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
@@ -14,4 +15,4 @@
 .applyButton { background: var(--color-button-primary); color: #fff; }
 .applyButton:hover { background: var(--color-button-hover); }
 .emptyState, .loading { padding: 1rem; border-radius: 10px; background: var(--color-surface-muted); color: var(--color-text-secondary); }
-@media (max-width: 540px) { .userInfo, .sessionItem, .applicationItem { align-items: stretch; flex-direction: column; } .logoutButton, .applyButton, .cancelButton { width: 100%; } }
+@media (max-width: 540px) { .userInfo, .sessionItem, .applicationItem { align-items: stretch; flex-direction: column; } .headerActions { width: 100%; } .headerActions > * { flex: 1; } .logoutButton, .applyButton, .cancelButton { width: 100%; } }

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { RootState } from './store';
-import Notifications from './components/Notification/Notification';
 import Login from './components/Login/Login';
 import ScheduleManagement from './components/ScheduleManagement/ScheduleManagement';
 import InstructorDashboard from './components/InstructorDashboard/InstructorDashboard';
@@ -41,7 +40,6 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="App">
-        {isAuthenticated && <Notifications />}
         <Routes>
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/" replace /> : <Login />

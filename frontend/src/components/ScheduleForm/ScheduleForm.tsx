@@ -12,6 +12,7 @@ import styles from './ScheduleForm.module.css';
 interface ScheduleFormProps {
   schedule?: Schedule;
   onClose: () => void;
+  onSaved?: (schedule: Schedule) => void;
 }
 
 const initialFormState: ScheduleInput = {
@@ -34,7 +35,7 @@ const inputFromSchedule = (schedule: Schedule): ScheduleInput => ({
   status: schedule.status,
 });
 
-const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
+const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose, onSaved }) => {
   const [formData, setFormData] = useState<ScheduleInput>(
     schedule ? inputFromSchedule(schedule) : initialFormState
   );
@@ -71,13 +72,15 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose }) => {
     e.preventDefault();
     if (validateForm()) {
       try {
+        const savedSchedule = schedule
+          ? await dispatch(updateSchedule({ ...formData, id: schedule.id })).unwrap()
+          : await dispatch(addSchedule(formData)).unwrap();
         if (schedule) {
-          await dispatch(updateSchedule({ ...formData, id: schedule.id })).unwrap();
           showSuccessNotification('일정을 수정했습니다.');
         } else {
-          await dispatch(addSchedule(formData)).unwrap();
           showSuccessNotification('일정을 등록했습니다.');
         }
+        onSaved?.(savedSchedule);
         onClose();
       } catch (error) {
         console.error('Error submitting form:', error);

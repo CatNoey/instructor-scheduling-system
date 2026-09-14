@@ -93,7 +93,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
     <div className={styles.calendar}>
       <div className={styles.calendarHeader}>
         <button type="button" onClick={goToPreviousMonth} aria-label="이전 달">‹</button>
-        <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+        <h2>{currentDate.toLocaleDateString('ko-KR', { month: 'long', year: 'numeric' })}</h2>
         <button type="button" onClick={goToNextMonth} aria-label="다음 달">›</button>
       </div>
       <div className={styles.calendarGrid}>

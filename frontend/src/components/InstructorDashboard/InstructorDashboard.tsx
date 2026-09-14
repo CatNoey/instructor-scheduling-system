@@ -9,6 +9,7 @@ import { showSuccessNotification, showErrorNotification } from '../../utils/noti
 import { Session, InstructorApplication } from '../../types';
 import styles from './InstructorDashboard.module.css';
 import { applicationStatusLabel, formatTime, trainingTypeLabel } from '../../utils/presentation';
+import Notifications from '../Notification/Notification';
 
 const InstructorDashboard: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -71,7 +72,7 @@ const InstructorDashboard: React.FC = () => {
       <h1>강사 대시보드</h1>
       <div className={styles.userInfo}>
         <p><strong>{user.username}</strong>님, 반갑습니다.</p>
-        <button onClick={handleLogout} className={styles.logoutButton}>로그아웃</button>
+        <div className={styles.headerActions}><Notifications /><button onClick={handleLogout} className={styles.logoutButton}>로그아웃</button></div>
       </div>
 
       <h2>지원 가능한 세션</h2>

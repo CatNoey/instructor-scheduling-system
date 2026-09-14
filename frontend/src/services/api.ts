@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import {
-  ApiEnvelope, InstructorApplication, Schedule, ScheduleInput, Session, SessionInput, SessionUpdateInput,
+  ApiEnvelope, InstructorApplication, Schedule, ScheduleInput, Session, SessionInput, SessionUpdateInput, UserNotification,
 } from '../types';
 import authService from './authService';
 
@@ -108,5 +108,13 @@ export const getScheduleApplications = async (scheduleId: number): Promise<Instr
 export const reviewApplication = async (applicationId: number, status: InstructorApplication['status']): Promise<InstructorApplication> => {
   try { return unwrap((await api.patch<ApiEnvelope<InstructorApplication>>(`/applications/${applicationId}/review`, { status })).data, '지원 상태를 변경하지 못했습니다.'); }
   catch (error) { throw new Error(messageFor(error, '지원 상태를 변경하지 못했습니다.')); }
+};
+export const getNotifications = async (): Promise<UserNotification[]> => {
+  try { return unwrap((await api.get<ApiEnvelope<UserNotification[]>>('/notifications')).data, '알림을 불러오지 못했습니다.'); }
+  catch (error) { throw new Error(messageFor(error, '알림을 불러오지 못했습니다.')); }
+};
+export const markNotificationRead = async (notificationId: number): Promise<UserNotification> => {
+  try { return unwrap((await api.patch<ApiEnvelope<UserNotification>>(`/notifications/${notificationId}/read`)).data, '알림을 읽음 처리하지 못했습니다.'); }
+  catch (error) { throw new Error(messageFor(error, '알림을 읽음 처리하지 못했습니다.')); }
 };
 export default api;

@@ -15,6 +15,7 @@ import { Schedule, TrainingType } from '../../types';
 import { businessDateToLocalDate } from '../../utils/dateTime';
 import { trainingTypeLabel } from '../../utils/presentation';
 import styles from './ScheduleManagement.module.css';
+import Notifications from '../Notification/Notification';
 
 const ScheduleManagement: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -65,6 +66,11 @@ const ScheduleManagement: React.FC = () => {
     setEditingSchedule(undefined);
   }, []);
 
+  const handleScheduleSaved = useCallback((schedule: Schedule) => {
+    setFilters([]);
+    setSelectedDate(businessDateToLocalDate(schedule.date));
+  }, []);
+
   const handleScheduleSelect = useCallback((schedule: Schedule) => {
     if (permissions?.viewSessions) {
       setSelectedSchedule(schedule);
@@ -111,7 +117,7 @@ const ScheduleManagement: React.FC = () => {
       <h1>일정 관리</h1>
       <div className={styles.userInfo}>
         <p><strong>{user.username}</strong>님 · 관리자</p>
-        <button onClick={handleLogout} className={styles.logoutButton}>로그아웃</button>
+        <div className={styles.headerActions}><Notifications /><button onClick={handleLogout} className={styles.logoutButton}>로그아웃</button></div>
       </div>
       
       {permissions.editSchedules && (
@@ -123,7 +129,7 @@ const ScheduleManagement: React.FC = () => {
       {status === 'failed' && <p className={styles.error} role="alert">일정을 불러오지 못했습니다. {error}</p>}
       
       {isFormOpen && permissions.editSchedules && (
-        <ScheduleForm schedule={editingSchedule} onClose={handleCloseForm} />
+        <ScheduleForm schedule={editingSchedule} onClose={handleCloseForm} onSaved={handleScheduleSaved} />
       )}
 
       <div className={styles.filters}>

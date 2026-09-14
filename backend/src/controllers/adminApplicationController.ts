@@ -5,6 +5,7 @@ import { InstructorApplication } from '../models/InstructorApplication';
 import { Schedule } from '../models/Schedule';
 import { Session } from '../models/Session';
 import { User } from '../models/User';
+import { UserNotification } from '../models/UserNotification';
 import { asyncHandler, sendData, sendError } from '../../shared/apiResponse';
 import { isPlainObject, parsePositiveInteger } from '../../shared/validation';
 
@@ -83,7 +84,15 @@ export const reviewApplication = asyncHandler(async (req, res) => {
       if (overlap) return { kind: 'time-conflict' as const };
     }
 
+    const wasApproved = application.status === 'approved';
     if (application.status !== status) await application.update({ status }, { transaction });
+    if (status === 'approved' && !wasApproved) {
+      await UserNotification.create({
+        userId: application.instructorId,
+        type: 'info',
+        message: `${schedule.date} ${schedule.institutionName} 세션 배정이 확정되었습니다.`,
+      }, { transaction });
+    }
     const reviewed = await InstructorApplication.findByPk(application.id, { include: applicationInclude, transaction });
     return { kind: 'reviewed' as const, application: reviewed };
   });
