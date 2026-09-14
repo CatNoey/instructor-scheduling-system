@@ -18,15 +18,11 @@ const isInstructor = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-// Apply verifyToken middleware to all routes
-router.use(verifyToken);
-
-// Apply isInstructor middleware to all routes
-router.use(isInstructor);
-
-router.get('/sessions/available', controller.getAvailableSessions);
-router.post('/sessions/:sessionId/apply', controller.applyForSession);
-router.delete('/applications/:applicationId', controller.cancelApplication);
-router.get('/applications', controller.getInstructorApplications);
+// This router is mounted at `/api`, alongside administrator routes. Keep the
+// role check on each exact route so it cannot intercept administrator paths.
+router.get('/sessions/available', verifyToken, isInstructor, controller.getAvailableSessions);
+router.post('/sessions/:sessionId/apply', verifyToken, isInstructor, controller.applyForSession);
+router.delete('/applications/:applicationId', verifyToken, isInstructor, controller.cancelApplication);
+router.get('/applications', verifyToken, isInstructor, controller.getInstructorApplications);
 
 export default router;
