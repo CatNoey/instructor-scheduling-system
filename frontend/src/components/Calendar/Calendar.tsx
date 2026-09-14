@@ -88,12 +88,21 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, selectedDate, onDateSele
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
+  const goToToday = () => {
+    const nextDate = new Date();
+    setCurrentDate(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
+    onDateSelect(nextDate);
+  };
+
   return (
     <div className={styles.calendar}>
       <div className={styles.calendarHeader}>
         <button type="button" onClick={goToPreviousMonth} aria-label="이전 달">‹</button>
         <h2>{currentDate.toLocaleDateString('ko-KR', { month: 'long', year: 'numeric' })}</h2>
-        <button type="button" onClick={goToNextMonth} aria-label="다음 달">›</button>
+        <div className={styles.calendarControls}>
+          <button type="button" onClick={goToToday} className={styles.todayButton}>오늘</button>
+          <button type="button" onClick={goToNextMonth} aria-label="다음 달">›</button>
+        </div>
       </div>
       <div className={styles.calendarGrid}>
         {['일', '월', '화', '수', '목', '금', '토'].map((weekday) => <div key={weekday} className={styles.calendarDayHeader}>{weekday}</div>)}
