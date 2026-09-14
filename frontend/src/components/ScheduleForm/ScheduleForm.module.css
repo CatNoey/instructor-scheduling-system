@@ -1,16 +1,9 @@
-/* src/components/ScheduleForm/ScheduleForm.css */
-
-.schedule-form {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
+.scheduleForm { display: grid; gap: 1rem; width: min(100%, 620px); margin: 1.25rem auto; padding: clamp(1rem, 4vw, 1.75rem); border: 1px solid #dbe3ed; border-radius: 14px; background: #fff; box-shadow: var(--shadow-card); }
+.formGroup { display: grid; gap: 0.4rem; }
+.formGroup label { font-weight: 750; }
+.formActions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+.formActions button:first-child { background: var(--color-button-primary); color: #fff; }
+.formActions button:last-child { background: var(--color-surface-muted); color: var(--color-text-primary); }
+.error { color: var(--color-danger); font-size: 0.9rem; }
+.helpText { margin: 0; color: var(--color-text-secondary); font-size: 0.825rem; }
+@media (max-width: 480px) { .formActions > * { flex: 1 1 120px; } }

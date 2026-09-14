@@ -26,7 +26,13 @@ export class InstructorApplicationController {
     const sessions = await Session.findAll({
       where: { startTime: { [Op.gt]: new Date() }, '$applications.id$': null },
       include: [
-        { model: Schedule, as: 'schedule', required: true, where: { status: 'open' }, attributes: [] },
+        {
+          model: Schedule,
+          as: 'schedule',
+          required: true,
+          where: { status: 'open' },
+          attributes: ['id', 'date', 'institutionName', 'region', 'status'],
+        },
         {
           model: InstructorApplication,
           as: 'applications',
@@ -88,7 +94,11 @@ export class InstructorApplicationController {
     if (!instructorId) return invalid(res, 'Instructor id must be a positive integer');
     const applications = await InstructorApplication.findAll({
       where: { instructorId },
-      include: [{ model: Session, as: 'session' }],
+      include: [{
+        model: Session,
+        as: 'session',
+        include: [{ model: Schedule, as: 'schedule', attributes: ['id', 'date', 'institutionName', 'region', 'status'] }],
+      }],
       order: [['createdAt', 'DESC']],
     });
     return sendData(res, applications);

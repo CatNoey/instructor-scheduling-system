@@ -13,7 +13,7 @@ interface SessionState {
   cancellingApplicationIds: number[];
 }
 const initialState: SessionState = { items: [], selectedScheduleId: null, availableSessions: [], instructorApplications: [], status: 'idle', error: null, applyingSessionIds: [], cancellingApplicationIds: [] };
-const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'An unknown error occurred';
+const errorMessage = (error: unknown) => error instanceof Error ? error.message : '처리 중 알 수 없는 오류가 발생했습니다.';
 
 export const fetchSessions = createAsyncThunk<Session[], number, { rejectValue: string }>(
   'sessions/fetchSessions', async (scheduleId, { rejectWithValue }) => {
@@ -68,17 +68,17 @@ const sessionSlice = createSlice({
       // Ignore a stale response after the user selected another schedule.
       if (state.selectedScheduleId === action.meta.arg) { state.status = 'succeeded'; state.items = action.payload; }
     })
-    .addCase(fetchSessions.rejected, (state, action) => { if (state.selectedScheduleId === action.meta.arg) { state.status = 'failed'; state.error = action.payload || 'Failed to fetch sessions'; } })
+    .addCase(fetchSessions.rejected, (state, action) => { if (state.selectedScheduleId === action.meta.arg) { state.status = 'failed'; state.error = action.payload || '세션 목록을 불러오지 못했습니다.'; } })
     .addCase(fetchAvailableSessions.fulfilled, (state, action) => { state.availableSessions = action.payload; })
-    .addCase(fetchAvailableSessions.rejected, (state, action) => { state.error = action.payload || 'Failed to fetch available sessions'; })
+    .addCase(fetchAvailableSessions.rejected, (state, action) => { state.error = action.payload || '지원 가능한 세션을 불러오지 못했습니다.'; })
     .addCase(fetchInstructorApplications.fulfilled, (state, action) => { state.instructorApplications = action.payload; })
-    .addCase(fetchInstructorApplications.rejected, (state, action) => { state.error = action.payload || 'Failed to fetch applications'; })
+    .addCase(fetchInstructorApplications.rejected, (state, action) => { state.error = action.payload || '지원 내역을 불러오지 못했습니다.'; })
     .addCase(applyForSession.pending, (state, action) => { state.applyingSessionIds.push(action.meta.arg); state.error = null; })
     .addCase(applyForSession.fulfilled, (state, action) => { state.instructorApplications.push(action.payload); state.applyingSessionIds = state.applyingSessionIds.filter((id) => id !== action.meta.arg); })
-    .addCase(applyForSession.rejected, (state, action) => { state.applyingSessionIds = state.applyingSessionIds.filter((id) => id !== action.meta.arg); state.error = action.payload || 'Failed to apply for session'; })
+    .addCase(applyForSession.rejected, (state, action) => { state.applyingSessionIds = state.applyingSessionIds.filter((id) => id !== action.meta.arg); state.error = action.payload || '세션 지원을 완료하지 못했습니다.'; })
     .addCase(cancelApplication.pending, (state, action) => { state.cancellingApplicationIds.push(action.meta.arg); state.error = null; })
     .addCase(cancelApplication.fulfilled, (state, action) => { state.instructorApplications = state.instructorApplications.filter((app) => app.id !== action.payload); state.cancellingApplicationIds = state.cancellingApplicationIds.filter((id) => id !== action.meta.arg); })
-    .addCase(cancelApplication.rejected, (state, action) => { state.cancellingApplicationIds = state.cancellingApplicationIds.filter((id) => id !== action.meta.arg); state.error = action.payload || 'Failed to cancel application'; })
+    .addCase(cancelApplication.rejected, (state, action) => { state.cancellingApplicationIds = state.cancellingApplicationIds.filter((id) => id !== action.meta.arg); state.error = action.payload || '지원 취소를 완료하지 못했습니다.'; })
     .addCase(addSession.fulfilled, (state, action) => { if (state.selectedScheduleId === action.payload.scheduleId) state.items.push(action.payload); })
     .addCase(updateSession.fulfilled, (state, action) => { const index = state.items.findIndex((session) => session.id === action.payload.id); if (index !== -1) state.items[index] = action.payload; })
     .addCase(deleteSession.fulfilled, (state, action) => { state.items = state.items.filter((session) => session.id !== action.payload.sessionId); }),

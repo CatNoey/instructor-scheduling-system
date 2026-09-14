@@ -38,9 +38,11 @@ const Login: React.FC = () => {
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
-        <h1 className={styles.loginTitle}>Welcome</h1>
+        <p className={styles.eyebrow}>강사 일정 관리</p>
+        <h1 className={styles.loginTitle}>로그인</h1>
+        <p className={styles.description}>계정 정보를 입력해 주세요.</p>
         <form onSubmit={handleSubmit} className={styles.loginForm}>
-          {error && <div className={styles.errorMessage}>{error}</div>}
+          {error && <div className={styles.errorMessage} role="alert">{error}</div>}
           <div className={styles.formGroup}>
             <input
               type="text"
@@ -48,7 +50,8 @@ const Login: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Username"
+              placeholder="아이디"
+              aria-label="아이디"
             />
           </div>
           <div className={styles.formGroup}>
@@ -58,11 +61,12 @@ const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Password"
+              placeholder="비밀번호"
+              aria-label="비밀번호"
             />
           </div>
           <button type="submit" disabled={loading} className={styles.loginButton}>
-        {loading ? 'Logging in...' : 'Log in'}
+        {loading ? '로그인 중…' : '로그인'}
           </button>
         </form>
       </div>

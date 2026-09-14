@@ -29,13 +29,13 @@ const Notifications: React.FC = () => {
 
   return (
     <div className={styles.notificationsContainer}>
-      <button className={styles.toggleButton} onClick={handleToggle}>
-        Notifications {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
+      <button className={styles.toggleButton} onClick={handleToggle} aria-expanded={isOpen} aria-controls="notification-list">
+        알림 {unreadCount > 0 && <span className={styles.badge} aria-label={`읽지 않은 알림 ${unreadCount}개`}>{unreadCount}</span>}
       </button>
       {isOpen && (
-        <div className={styles.notificationsList}>
+        <div id="notification-list" className={styles.notificationsList} aria-label="알림 목록">
           {notifications.length === 0 ? (
-            <p className={styles.noNotifications}>No notifications</p>
+            <p className={styles.noNotifications}>새 알림이 없습니다.</p>
           ) : (
             notifications.map((notification: NotificationType) => (
               <div 
@@ -49,7 +49,7 @@ const Notifications: React.FC = () => {
                     className={styles.markAsReadButton}
                     onClick={() => handleMarkAsRead(notification.id)}
                   >
-                    Mark as read
+                    읽음으로 표시
                   </button>
                 )}
               </div>

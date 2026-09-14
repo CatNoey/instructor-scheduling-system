@@ -47,7 +47,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   const renderCalendarDays = () => {
     const days = [];
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className={`${styles.calendarDay} ${styles.empty}`}></div>);
+      days.push(<div key={`empty-${i}`} className={`${styles.calendarDay} ${styles.empty}`} aria-hidden="true"></div>);
     }
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
@@ -58,10 +58,12 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
       });
   
       days.push(
-        <div
+        <button
+          type="button"
           key={day}
           className={getDayClass(day)}
           onClick={() => onDateSelect(date)}
+          aria-label={`${date.toLocaleDateString('ko-KR', { dateStyle: 'full' })}${daySchedules.length ? `, 일정 ${daySchedules.length}건` : ''}`}
         >
           <span className={styles.dayNumber}>{day}</span>
           {daySchedules.map(schedule => (
@@ -73,7 +75,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
               title={`${schedule.institutionName} - ${schedule.trainingType}`}
             ></div>
           ))}
-        </div>
+        </button>
       );
     }
     return days;
@@ -90,18 +92,12 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   return (
     <div className={styles.calendar}>
       <div className={styles.calendarHeader}>
-        <button onClick={goToPreviousMonth}>&lt;</button>
+        <button type="button" onClick={goToPreviousMonth} aria-label="이전 달">‹</button>
         <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
-        <button onClick={goToNextMonth}>&gt;</button>
+        <button type="button" onClick={goToNextMonth} aria-label="다음 달">›</button>
       </div>
       <div className={styles.calendarGrid}>
-        <div className={styles.calendarDayHeader}>Sun</div>
-        <div className={styles.calendarDayHeader}>Mon</div>
-        <div className={styles.calendarDayHeader}>Tue</div>
-        <div className={styles.calendarDayHeader}>Wed</div>
-        <div className={styles.calendarDayHeader}>Thu</div>
-        <div className={styles.calendarDayHeader}>Fri</div>
-        <div className={styles.calendarDayHeader}>Sat</div>
+        {['일', '월', '화', '수', '목', '금', '토'].map((weekday) => <div key={weekday} className={styles.calendarDayHeader}>{weekday}</div>)}
         {renderCalendarDays()}
       </div>
     </div>

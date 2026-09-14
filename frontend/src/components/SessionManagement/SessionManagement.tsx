@@ -7,6 +7,7 @@ import { fetchSessions, deleteSession } from '../../store/sessionSlice';
 import { Session } from '../../types';
 import SessionForm from '../SessionForm/SessionForm';
 import { showErrorNotification, showSuccessNotification } from '../../utils/notifications';
+import { formatTime } from '../../utils/presentation';
 import styles from './SessionManagement.module.css';
 
 export interface SessionManagementProps {
@@ -40,9 +41,9 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, sched
     if (window.confirm('Are you sure you want to delete this session?')) {
       try {
         await dispatch(deleteSession({ scheduleId, sessionId })).unwrap();
-        showSuccessNotification('Session deleted successfully');
-      } catch (error) {
-        showErrorNotification('Failed to delete session');
+        showSuccessNotification('세션을 삭제했습니다.');
+      } catch {
+        showErrorNotification('세션을 삭제하지 못했습니다.');
       }
     }
   };
@@ -53,47 +54,47 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, sched
   };
 
   if (status === 'loading') {
-    return <div>Loading sessions...</div>;
+    return <p className={styles.loading}>세션을 불러오는 중…</p>;
   }
 
   if (status === 'failed') {
-    return <div>Error loading sessions: {error}</div>;
+    return <p className={styles.error} role="alert">세션을 불러오지 못했습니다. {error}</p>;
   }
 
   return (
     <div className={styles.sessionManagement}>
-      <h3>Sessions</h3>
-      {canEdit && <button onClick={handleAddSession} className={styles.addButton}>Add Session</button>}
+      <h3>세션</h3>
+      {canEdit && <button onClick={handleAddSession} className={styles.addButton}>새 세션 등록</button>}
       {sessions.length === 0 ? (
-        <p>No sessions available for this schedule.</p>
+        <p className={styles.emptyState}>등록된 세션이 없습니다.</p>
       ) : (
-        <table className={styles.sessionTable}>
+        <div className={styles.tableWrap}><table className={styles.sessionTable}>
           <thead>
             <tr>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th>Instructor</th>
-              <th>Notes</th>
-              {(canEdit || canDelete) && <th>Actions</th>}
+              <th>시작</th>
+              <th>종료</th>
+              <th>담당 강사</th>
+              <th>메모</th>
+              {(canEdit || canDelete) && <th>관리</th>}
             </tr>
           </thead>
           <tbody>
             {sessions.map((session: Session) => (
               <tr key={session.id}>
-                <td>{new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                <td>{new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td>{formatTime(session.startTime)}</td>
+                      <td>{formatTime(session.endTime)}</td>
                 <td>{session.instructor}</td>
                 <td>{session.notes}</td>
                 {(canEdit || canDelete) && (
                   <td>
                     {canEdit && (
                       <button onClick={() => handleEditSession(session)} className={styles.editButton}>
-                        Edit
+                        수정
                       </button>
                     )}
                     {canDelete && (
                       <button onClick={() => handleDeleteSession(session.id)} className={styles.deleteButton}>
-                        Delete
+                        삭제
                       </button>
                     )}
                   </td>
@@ -101,7 +102,7 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, sched
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
       {isFormOpen && (
         <SessionForm

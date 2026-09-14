@@ -38,12 +38,17 @@ const isUser = (value: unknown): value is User => {
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/login`, credentials);
-    if (!isUser(response.data.user) || typeof response.data.token !== 'string') throw new Error('The login response was invalid');
-    clearStoredAuth();
-    localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
-    localStorage.setItem(TOKEN_KEY, response.data.token);
-    return response.data;
+    try {
+      const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/login`, credentials);
+      if (!isUser(response.data.user) || typeof response.data.token !== 'string') throw new Error('로그인 응답 형식이 올바르지 않습니다.');
+      clearStoredAuth();
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      localStorage.setItem(TOKEN_KEY, response.data.token);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) throw new Error('아이디 또는 비밀번호를 확인해 주세요.');
+      throw error;
+    }
   },
 
   logout: async (): Promise<void> => {

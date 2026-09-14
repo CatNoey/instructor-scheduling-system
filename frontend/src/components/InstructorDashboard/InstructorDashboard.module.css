@@ -1,58 +1,17 @@
-.instructorDashboard {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .userInfo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .logoutButton {
-    background-color: #f44336;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  
-  .sessionList, .applicationList {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .sessionItem, .applicationItem {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    padding: 15px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .sessionInfo, .applicationInfo {
-    flex-grow: 1;
-  }
-  
-  .applyButton, .cancelButton {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  
-  .cancelButton {
-    background-color: #f44336;
-  }
-  
-  h2 {
-    margin-top: 30px;
-  }
+.instructorDashboard { width: min(100%, 900px); margin: 0 auto; padding: clamp(1rem, 4vw, 2.5rem); }
+.instructorDashboard > h1 { margin-bottom: 0.5rem; font-size: clamp(1.75rem, 5vw, 2.35rem); }
+.instructorDashboard h2 { margin: 2rem 0 0.8rem; font-size: 1.25rem; }
+.userInfo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; border: 1px solid #dbe3ed; border-radius: 12px; background: #fff; }
+.userInfo p { margin: 0; }
+.logoutButton, .cancelButton { background: var(--color-danger); color: #fff; }
+.logoutButton:hover, .cancelButton:hover { background: var(--color-danger-hover); }
+.sessionList, .applicationList { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.sessionItem, .applicationItem { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border: 1px solid #dbe3ed; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(23, 32, 51, 0.04); }
+.sessionInfo, .applicationInfo { min-width: 0; }
+.sessionInfo h3, .applicationInfo h3 { margin-bottom: 0.35rem; font-size: 1.05rem; }
+.sessionInfo p, .applicationInfo p { margin: 0.2rem 0; color: var(--color-text-secondary); }
+.sessionInfo span, .applicationInfo span { display: inline-block; width: 4.75rem; color: var(--color-text-primary); font-weight: 700; }
+.applyButton { background: var(--color-button-primary); color: #fff; }
+.applyButton:hover { background: var(--color-button-hover); }
+.emptyState, .loading { padding: 1rem; border-radius: 10px; background: var(--color-surface-muted); color: var(--color-text-secondary); }
+@media (max-width: 540px) { .userInfo, .sessionItem, .applicationItem { align-items: stretch; flex-direction: column; } .logoutButton, .applyButton, .cancelButton { width: 100%; } }

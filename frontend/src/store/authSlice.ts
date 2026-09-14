@@ -30,7 +30,7 @@ export const login = createAsyncThunk(
       const response = await authService.login(credentials);
       return response.user;
     } catch (error: unknown) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+      return rejectWithValue(error instanceof Error ? error.message : '로그인하지 못했습니다.');
     }
   }
 );
@@ -51,7 +51,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.permissions = null;
       state.loading = false;
-      state.error = 'Your session has expired. Please log in again.';
+      state.error = '로그인 시간이 만료되었습니다. 다시 로그인해 주세요.';
     },
   },
   extraReducers: (builder) => {

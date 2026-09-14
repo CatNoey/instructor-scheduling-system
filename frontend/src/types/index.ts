@@ -28,6 +28,8 @@ export interface Session {
   instructor: string;
   notes?: string | null;
   trainingType: TrainingType;
+  /** Included for instructor-facing session lists. */
+  schedule?: Pick<Schedule, 'id' | 'date' | 'institutionName' | 'region' | 'status'>;
 }
 export type SessionInput = Omit<Session, 'id'>;
 export type SessionUpdateInput = Omit<Session, 'id' | 'scheduleId'>;

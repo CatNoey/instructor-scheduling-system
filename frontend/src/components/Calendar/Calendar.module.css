@@ -1,66 +1,14 @@
-/* src/components/Calendar/Calendar.module.css */
-
-.calendar {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.calendarHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.calendarGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background-color: #ddd;
-}
-
-.calendarDayHeader {
-  background-color: #f0f0f0;
-  padding: 5px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.calendarDay {
-  background-color: white;
-  min-height: 80px;
-  padding: 5px;
-  position: relative;
-}
-
-.empty {
-  background-color: #f9f9f9;
-}
-
-.today {
-  background-color: #e6f3ff;
-}
-
-.hasSchedule {
-  font-weight: bold;
-}
-
-.dayNumber {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-}
-
-.scheduleIndicator {
-  width: 10px;
-  height: 10px;
-  background-color: #4CAF50;
-  border-radius: 50%;
-  margin: 2px;
-  display: inline-block;
-}
-
-.teamLeaderOnly {
-  background-color: #FFA500;
-}
+.calendar { width: 100%; min-width: 0; }
+.calendarHeader { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+.calendarHeader h2 { margin: 0; font-size: clamp(1.1rem, 4vw, 1.45rem); }
+.calendarHeader button { width: 44px; padding: 0; background: var(--color-surface-muted); color: var(--color-text-primary); font-size: 1.75rem; line-height: 1; }
+.calendarGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-border); }
+.calendarDayHeader { padding: 0.55rem 0.25rem; background: #e8eef5; text-align: center; color: var(--color-text-secondary); font-size: 0.8rem; font-weight: 800; }
+.calendarDay { position: relative; display: block; min-height: 76px; padding: 0.5rem; border-radius: 0; background: #fff; color: var(--color-text-primary); text-align: left; font-weight: 500; }
+.calendarDay:hover { background: #f0fdfa; }
+.empty { min-height: 76px; background: #f8fafc; }
+.today { background: #eff6ff; }
+.hasSchedule { box-shadow: inset 0 -3px 0 var(--color-button-primary); font-weight: 800; }
+.dayNumber { display: block; }
+.scheduleIndicator { width: 8px; height: 8px; margin: 0.4rem 0.1rem 0; border-radius: 99px; background: var(--color-button-primary); display: inline-block; }
+@media (max-width: 480px) { .calendarDay { min-height: 54px; padding: 0.35rem; font-size: 0.875rem; } .empty { min-height: 54px; } .calendarDayHeader { font-size: 0.7rem; } }
