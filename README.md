@@ -61,3 +61,4 @@ npm run test
 
 현재 구현 상태와 과거 점검 결과는 [ASSESSMENT.md](ASSESSMENT.md)에 분리해 기록합니다.
 AWS에 운영 배포할 때는 [AWS_DEPLOYMENT_GUIDE.md](AWS_DEPLOYMENT_GUIDE.md)를 사용하세요.
+역할별 업무 시나리오와 예외 흐름은 [USER_FLOWS_AND_USE_CASES.md](USER_FLOWS_AND_USE_CASES.md)를 사용하세요.
