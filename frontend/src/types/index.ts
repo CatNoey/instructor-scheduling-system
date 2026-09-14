@@ -44,6 +44,14 @@ export interface InstructorApplication {
   createdAt: string;
 }
 
+export interface UserNotification {
+  id: number;
+  message: string;
+  type: 'info' | 'warning' | 'error';
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface ApiError { code: string; message: string; }
 export interface ApiResponse<T> { success: true; data: T; }
 export interface ApiFailureResponse { success: false; error: ApiError; }

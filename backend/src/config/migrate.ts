@@ -4,6 +4,8 @@ import { getAppConfig } from './env';
 import { initialSchemaMigration } from './migrations/001-initial-schema';
 import { Migration } from './migrations/types';
 import instructorApplicationUniqueConstraint from '../migrations/002-add-instructor-application-unique-constraint';
+import normalizeScheduleDate from '../migrations/003-normalize-schedule-date';
+import addUserNotifications from '../migrations/004-add-user-notifications';
 
 const migrations: Migration[] = [
   initialSchemaMigration,
@@ -11,6 +13,16 @@ const migrations: Migration[] = [
     name: '002-instructor-application-unique-constraint',
     up: (queryInterface, transaction) => instructorApplicationUniqueConstraint.up(queryInterface, transaction),
     down: (queryInterface, transaction) => instructorApplicationUniqueConstraint.down(queryInterface, transaction),
+  },
+  {
+    name: '003-normalize-schedule-date',
+    up: (queryInterface, transaction) => normalizeScheduleDate.up(queryInterface, transaction),
+    down: (queryInterface, transaction) => normalizeScheduleDate.down(queryInterface, transaction),
+  },
+  {
+    name: '004-add-user-notifications',
+    up: (queryInterface, transaction) => addUserNotifications.up(queryInterface, transaction),
+    down: (queryInterface, transaction) => addUserNotifications.down(queryInterface, transaction),
   },
 ];
 const historyTable = 'SchemaMigrations';

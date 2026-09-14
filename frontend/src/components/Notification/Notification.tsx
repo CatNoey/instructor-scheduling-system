@@ -1,30 +1,41 @@
 // src/components/Notification/Notification.tsx
 
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store';
-import { markNotificationAsRead, Notification as NotificationType } from '../../store/notificationSlice';
+import React, { useState, useEffect, useCallback } from 'react';
+import { UserNotification } from '../../types';
+import { getNotifications, markNotificationRead } from '../../services/api';
 import styles from './Notification.module.css';
 
 const Notifications: React.FC = () => {
-  const dispatch: AppDispatch = useDispatch();
-  const notifications = useSelector((state: RootState) => state.notifications.notifications);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const unreadCount = notifications.filter((n: NotificationType) => !n.isRead).length;
+  const unreadCount = notifications.filter((notification) => !notification.readAt).length;
 
-  useEffect(() => {
-    if (unreadCount > 0) {
-      setIsOpen(true);
+  const load = useCallback(async () => {
+    try {
+      setError(null);
+      setNotifications(await getNotifications());
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '알림을 불러오지 못했습니다.');
     }
-  }, [unreadCount]);
+  }, []);
 
-  const handleMarkAsRead = (id: string) => {
-    dispatch(markNotificationAsRead(id));
+  useEffect(() => { void load(); }, [load]);
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      const updated = await markNotificationRead(id);
+      setNotifications((current) => current.map((notification) => notification.id === id ? updated : notification));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '알림을 읽음 처리하지 못했습니다.');
+    }
   };
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
+    const nextOpen = !isOpen;
+    setIsOpen(nextOpen);
+    if (nextOpen) void load();
   };
 
   return (
@@ -34,20 +45,20 @@ const Notifications: React.FC = () => {
       </button>
       {isOpen && (
         <div id="notification-list" className={styles.notificationsList} aria-label="알림 목록">
-          {notifications.length === 0 ? (
+          {error ? <p className={styles.errorMessage} role="alert">{error}</p> : notifications.length === 0 ? (
             <p className={styles.noNotifications}>새 알림이 없습니다.</p>
           ) : (
-            notifications.map((notification: NotificationType) => (
+            notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`${styles.notificationItem} ${styles[notification.type]} ${notification.isRead ? styles.read : styles.unread}`}
+                className={`${styles.notificationItem} ${styles[notification.type]} ${notification.readAt ? styles.read : styles.unread}`}
               >
                 <p>{notification.message}</p>
-                <small>{new Date(notification.createdAt).toLocaleString()}</small>
-                {!notification.isRead && (
+                <small>{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(notification.createdAt))}</small>
+                {!notification.readAt && (
                   <button 
                     className={styles.markAsReadButton}
-                    onClick={() => handleMarkAsRead(notification.id)}
+                    onClick={() => void handleMarkAsRead(notification.id)}
                   >
                     읽음으로 표시
                   </button>

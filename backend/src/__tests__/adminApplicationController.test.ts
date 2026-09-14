@@ -8,12 +8,14 @@ jest.mock('../models/InstructorApplication', () => ({
 jest.mock('../models/Schedule', () => ({ Schedule: { findByPk: jest.fn() } }));
 jest.mock('../models/Session', () => ({ Session: { findByPk: jest.fn() } }));
 jest.mock('../models/User', () => ({ User: { findByPk: jest.fn() } }));
+jest.mock('../models/UserNotification', () => ({ UserNotification: { create: jest.fn() } }));
 
 import { getScheduleApplications, reviewApplication } from '../controllers/adminApplicationController';
 import { InstructorApplication } from '../models/InstructorApplication';
 import { Schedule } from '../models/Schedule';
 import { Session } from '../models/Session';
 import { User } from '../models/User';
+import { UserNotification } from '../models/UserNotification';
 
 const response = () => {
   const res = { status: jest.fn(), json: jest.fn() };
@@ -53,6 +55,7 @@ describe('admin application controller', () => {
     expect(InstructorApplication.count).toHaveBeenCalledWith(expect.objectContaining({ where: { status: 'approved' } }));
     expect(InstructorApplication.findOne).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ instructorId: 7, status: 'approved' }) }));
     expect(pendingApplication.update).toHaveBeenCalledWith({ status: 'approved' }, expect.anything());
+    expect(UserNotification.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 7, type: 'info' }), expect.anything());
     expect(res.json).toHaveBeenCalledWith({ success: true, data: { id: 3, status: 'approved' } });
   });
 

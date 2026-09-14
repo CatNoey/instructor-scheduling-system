@@ -4,6 +4,7 @@ import authRoutes from './routes/auth';
 import instructorApplicationRoutes from './routes/instructorApplicationRoutes';
 import adminApplicationRoutes from './routes/adminApplicationRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import { sendError } from './middleware/errorResponse';
 import './models/associations';
 
@@ -36,6 +37,7 @@ export const createApp = ({
 
   app.use('/api/auth', authRoutes);
   app.use('/api/schedules', scheduleRoutes);
+  app.use('/api/notifications', notificationRoutes);
   app.use('/api', adminApplicationRoutes);
   app.use('/api', instructorApplicationRoutes);
 

@@ -2,6 +2,7 @@
 .scheduleManagement > h1 { margin-bottom: 0.5rem; font-size: clamp(1.75rem, 5vw, 2.35rem); }
 .userInfo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; margin-bottom: 1.25rem; border: 1px solid #dbe3ed; border-radius: 12px; background: #fff; }
 .userInfo p { margin: 0; }
+.headerActions { display: flex; align-items: center; gap: 0.6rem; }
 .logoutButton { padding: 0.5rem 0.85rem; background: var(--color-danger); color: #fff; }
 .logoutButton:hover { background: var(--color-danger-hover); }
 .error { color: var(--color-danger); }
@@ -16,4 +17,4 @@
 .scheduleListContainer { min-width: 0; padding: 0.25rem 0; }
 .scheduleListContainer h2 { margin: 0 0 0.75rem; font-size: 1.15rem; }
 @media (max-width: 800px) { .calendarAndList { grid-template-columns: 1fr; } }
-@media (max-width: 480px) { .userInfo { align-items: flex-start; flex-direction: column; } .logoutButton { width: 100%; } }
+@media (max-width: 480px) { .userInfo { align-items: flex-start; flex-direction: column; } .headerActions { width: 100%; } .headerActions > * { flex: 1; } .logoutButton { width: 100%; } }
