@@ -51,7 +51,7 @@ const SessionManagement: React.FC<SessionManagementProps> = ({ scheduleId, sched
     <div className={styles.sectionHeading}><div><p className={styles.sectionLabel}>세션 운영</p><h3 id="session-heading">시간대와 지원자 관리</h3><p>세션을 만들고 접수 순서대로 강사를 검토·최종 배정합니다.</p></div>{canEdit && <button type="button" onClick={openNewSession} className={styles.addButton}>+ 새 세션 등록</button>}</div>
     {status === 'loading' && <p className={styles.loading}>세션을 불러오는 중…</p>}
     {status === 'failed' && <p className={styles.error} role="alert">세션을 불러오지 못했습니다. {error}</p>}
-    {status !== 'loading' && sessions.length === 0 && <div className={styles.emptyState}><strong>아직 등록된 세션이 없습니다.</strong><p>먼저 세션 시간과 모집 담당자를 등록해 강사 지원을 받을 수 있습니다.</p>{canEdit && <button type="button" onClick={openNewSession}>첫 세션 등록</button>}</div>}
+    {status !== 'loading' && sessions.length === 0 && <div className={styles.emptyState}><strong>아직 등록된 세션이 없습니다.</strong><p>먼저 세션 시간과 세션 표시명을 등록해 강사 지원을 받을 수 있습니다.</p>{canEdit && <button type="button" onClick={openNewSession}>첫 세션 등록</button>}</div>}
     <div className={styles.sessionCards}>{sessions.map((session) => <article key={session.id} className={styles.sessionCard}>
       <div className={styles.timeBlock}><span>운영 시간</span><strong>{formatTime(session.startTime)}–{formatTime(session.endTime)}</strong></div>
       <div className={styles.sessionBody}><h4>{session.instructor}</h4><p>{trainingTypeLabel(session.trainingType)}{session.notes ? ` · ${session.notes}` : ' · 메모 없음'}</p></div>

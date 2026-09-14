@@ -9,13 +9,15 @@ import styles from './ScheduleList.module.css';
 
 interface ScheduleListProps {
   schedules: Schedule[];
+  selectedScheduleId: number | null;
   onEdit: (schedule: Schedule) => void;
   onOpenDetails: (schedule: Schedule) => void;
   onAddSchedule: () => void;
+  renderDetails: (schedule: Schedule) => React.ReactNode;
   permissions: { editSchedules: boolean; deleteSchedules: boolean; viewSessions: boolean };
 }
 
-const ScheduleList: React.FC<ScheduleListProps> = ({ schedules, onEdit, onOpenDetails, onAddSchedule, permissions }) => {
+const ScheduleList: React.FC<ScheduleListProps> = ({ schedules, selectedScheduleId, onEdit, onOpenDetails, onAddSchedule, renderDetails, permissions }) => {
   const dispatch: AppDispatch = useDispatch();
   const { isDeleting } = useSelector((state: RootState) => state.schedules);
   const handleDelete = async (scheduleId: number) => {
@@ -25,22 +27,28 @@ const ScheduleList: React.FC<ScheduleListProps> = ({ schedules, onEdit, onOpenDe
   };
 
   if (!schedules.length) return <div className={styles.emptyState}>
-    <strong>선택한 날짜에 일정이 없습니다.</strong><p>일정을 등록하면 세션과 강사 지원을 바로 이어서 관리할 수 있습니다.</p>
-    {permissions.editSchedules && <button type="button" onClick={onAddSchedule}>일정 등록</button>}
+    <strong>선택한 날짜에 일정이 없습니다.</strong><p>이 날짜에 일정을 등록하면 세션과 강사 지원을 바로 이어서 관리할 수 있습니다.</p>
+    {permissions.editSchedules && <button type="button" onClick={onAddSchedule}>이 날짜에 일정 등록</button>}
   </div>;
 
   return <div className={styles.scheduleList} aria-label="선택 날짜 일정 목록">
-    {schedules.map((schedule) => <article key={schedule.id} className={styles.scheduleRow}>
-      <button type="button" onClick={() => onOpenDetails(schedule)} className={styles.rowMain} aria-label={`${schedule.institutionName} 일정 상세 열기`}>
-        <span className={`${styles.statusDot} ${styles[`status_${schedule.status}`]}`} aria-hidden="true" />
-        <span className={styles.rowTitle}><strong>{schedule.institutionName}</strong><small>{schedule.region} · {trainingTypeLabel(schedule.trainingType)} · {scheduleStatusLabel(schedule.status)}</small></span>
-        <span className={styles.capacity}><small>필요 배정</small><strong>{schedule.capacity}명</strong></span><span className={styles.arrow} aria-hidden="true">›</span>
-      </button>
-      <div className={styles.rowActions} aria-label={`${schedule.institutionName} 관리`}>
-        {permissions.editSchedules && <button type="button" onClick={() => onEdit(schedule)}>수정</button>}
-        {permissions.deleteSchedules && <button type="button" onClick={() => void handleDelete(schedule.id)} disabled={isDeleting} className={styles.deleteAction}>{isDeleting ? '삭제 중…' : '삭제'}</button>}
-      </div>
-    </article>)}
+    <div className={styles.listHeader} aria-hidden="true"><span>기관 / 지역</span><span>교육 유형</span><span>모집 정원</span><span>모집 상태</span><span /></div>
+    {schedules.map((schedule) => <React.Fragment key={schedule.id}>
+      <article className={`${styles.scheduleRow} ${selectedScheduleId === schedule.id ? styles.selected : ''}`}>
+        <button type="button" onClick={() => onOpenDetails(schedule)} className={styles.rowMain} aria-expanded={selectedScheduleId === schedule.id} aria-label={`${schedule.institutionName} 일정 상세 ${selectedScheduleId === schedule.id ? '닫기' : '열기'}`}>
+          <span className={styles.rowTitle}><strong>{schedule.institutionName}</strong><small>{schedule.region}</small></span>
+          <span className={styles.type}>{trainingTypeLabel(schedule.trainingType)}</span>
+          <span className={styles.capacity}>{schedule.capacity}명</span>
+          <span className={`${styles.status} ${styles[`status_${schedule.status}`]}`}><i aria-hidden="true" />{scheduleStatusLabel(schedule.status)}</span>
+          <span className={styles.arrow} aria-hidden="true">{selectedScheduleId === schedule.id ? '⌄' : '›'}</span>
+        </button>
+        <div className={styles.rowActions} aria-label={`${schedule.institutionName} 관리`}>
+          {permissions.editSchedules && <button type="button" onClick={() => onEdit(schedule)}>수정</button>}
+          {permissions.deleteSchedules && <button type="button" onClick={() => void handleDelete(schedule.id)} disabled={isDeleting} className={styles.deleteAction}>{isDeleting ? '삭제 중…' : '삭제'}</button>}
+        </div>
+      </article>
+      {selectedScheduleId === schedule.id && renderDetails(schedule)}
+    </React.Fragment>)}
   </div>;
 };
 

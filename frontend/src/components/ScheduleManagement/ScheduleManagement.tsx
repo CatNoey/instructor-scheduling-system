@@ -46,10 +46,6 @@ const ScheduleManagement: React.FC = () => {
   }, [isFormOpen, selectedSchedule]);
 
   const handleDateSelect = useCallback((date: Date) => { setSelectedDate(date); setSelectedSchedule(null); }, []);
-  const handleAdjacentDate = useCallback((offset: number) => {
-    setSelectedSchedule(null);
-    setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() + offset));
-  }, []);
   const handleAddSchedule = useCallback(() => {
     if (!permissions?.editSchedules) return showErrorNotification('일정을 등록할 권한이 없습니다.');
     setEditingSchedule(undefined); setIsFormOpen(true);
@@ -63,7 +59,7 @@ const ScheduleManagement: React.FC = () => {
     setSearchTerm(''); setTrainingType('all'); setScheduleStatus('all'); setSelectedDate(businessDateToLocalDate(schedule.date));
   }, []);
   const handleScheduleSelect = useCallback((schedule: Schedule) => {
-    if (permissions?.viewSessions) setSelectedSchedule(schedule);
+    if (permissions?.viewSessions) setSelectedSchedule((current) => current?.id === schedule.id ? null : schedule);
     else showErrorNotification('세션을 조회할 권한이 없습니다.');
   }, [permissions]);
   const handleLogout = useCallback(() => { dispatch(logout()); navigate('/login'); }, [dispatch, navigate]);
@@ -78,11 +74,28 @@ const ScheduleManagement: React.FC = () => {
       && (trainingType === 'all' || schedule.trainingType === trainingType)
       && (scheduleStatus === 'all' || schedule.status === scheduleStatus);
   }), [selectedDaySchedules, searchTerm, trainingType, scheduleStatus]);
-  const selectedScheduleCurrent = selectedSchedule ? schedules.find((schedule) => schedule.id === selectedSchedule.id) ?? null : null;
   const openCount = selectedDaySchedules.filter((schedule) => schedule.status === 'open').length;
   const capacity = selectedDaySchedules.reduce((total, schedule) => total + schedule.capacity, 0);
 
   if (!user || !permissions) return <div className={styles.loadingPage}>로그인이 필요합니다.</div>;
+
+  const renderScheduleDetails = (schedule: Schedule) => <section className={styles.detailPanel} aria-labelledby={`detail-title-${schedule.id}`}>
+    <div className={styles.detailHeading}>
+      <div><p className={styles.sectionLabel}>선택한 일정</p><h2 id={`detail-title-${schedule.id}`}>{schedule.institutionName}</h2><p>{formatBusinessDate(schedule.date)} · {schedule.region}</p></div>
+      <div className={styles.detailActions}>
+        {permissions.editSchedules && <button type="button" onClick={() => handleEditSchedule(schedule)} className={styles.detailEdit}>수정</button>}
+        <button type="button" onClick={() => setSelectedSchedule(null)} className={styles.closeDetail} aria-label="일정 상세 닫기">닫기</button>
+      </div>
+    </div>
+    <dl className={styles.detailMeta}>
+      <div><dt>일정 일자</dt><dd>{formatBusinessDate(schedule.date)}</dd></div>
+      <div><dt>지역</dt><dd>{schedule.region}</dd></div>
+      <div><dt>교육 유형</dt><dd>{trainingTypeLabel(schedule.trainingType)}</dd></div>
+      <div><dt>모집 상태</dt><dd>{scheduleStatusLabel(schedule.status)}</dd></div>
+      <div><dt>필요 배정 인원</dt><dd>{schedule.capacity}명</dd></div>
+    </dl>
+    <SessionManagement scheduleId={schedule.id} scheduleDate={schedule.date} scheduleName={schedule.institutionName} canEdit={!!permissions.editSessions} canDelete={!!permissions.deleteSessions} capacity={schedule.capacity} />
+  </section>;
 
   return <main className={styles.scheduleManagement}>
     <header className={styles.pageHeader}>
@@ -94,14 +107,14 @@ const ScheduleManagement: React.FC = () => {
     {status === 'failed' && <p className={styles.error} role="alert">일정을 불러오지 못했습니다. {error}</p>}
 
     <div className={styles.workspace}>
-      <aside className={styles.calendarPanel} aria-label="월간 일정 탐색">
-        <div className={styles.panelHeading}><div><p className={styles.sectionLabel}>날짜 탐색</p><h2>월간 일정</h2></div><span>{schedules.length}건</span></div>
+      <section className={styles.calendarPanel} aria-label="월간 일정 탐색">
+        <div className={styles.panelHeading}><div><p className={styles.sectionLabel}>날짜 탐색</p><h2>월간 일정</h2></div><span>등록 일정 {schedules.length}건</span></div>
         <Calendar schedules={schedules} selectedDate={selectedDate} onDateSelect={handleDateSelect} userRole={user.role} />
-      </aside>
+      </section>
 
       <section className={styles.agendaPanel} aria-labelledby="agenda-title">
         <div className={styles.agendaHeading}>
-          <div><p className={styles.sectionLabel}>선택한 날짜</p><div className={styles.dateNavigation}><button type="button" onClick={() => handleAdjacentDate(-1)} aria-label="이전 날짜">‹</button><h2 id="agenda-title">{formatBusinessDate(`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`)}</h2><button type="button" onClick={() => handleAdjacentDate(1)} aria-label="다음 날짜">›</button></div></div>
+          <div><p className={styles.sectionLabel}>선택한 날짜</p><h2 id="agenda-title">{formatBusinessDate(`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`)}</h2></div>
           {permissions.editSchedules && <button type="button" onClick={handleAddSchedule} className={styles.addButton}>+ 새 일정 등록</button>}
         </div>
         <div className={styles.summary} aria-label="선택 날짜 요약">
@@ -120,24 +133,9 @@ const ScheduleManagement: React.FC = () => {
           {(searchTerm || trainingType !== 'all' || scheduleStatus !== 'all') && <button type="button" onClick={clearFilters} className={styles.clearButton}>초기화</button>}
         </div>
         <div className={styles.listMeta}><span>{visibleSchedules.length}개 일정</span>{visibleSchedules.length !== selectedDaySchedules.length && <span>필터 적용됨</span>}</div>
-        <ScheduleList schedules={visibleSchedules} onEdit={handleEditSchedule} onOpenDetails={handleScheduleSelect} onAddSchedule={handleAddSchedule} permissions={{ editSchedules: !!permissions.editSchedules, deleteSchedules: !!permissions.deleteSchedules, viewSessions: !!permissions.viewSessions }} />
+        <ScheduleList schedules={visibleSchedules} selectedScheduleId={selectedSchedule?.id ?? null} onEdit={handleEditSchedule} onOpenDetails={handleScheduleSelect} onAddSchedule={handleAddSchedule} renderDetails={renderScheduleDetails} permissions={{ editSchedules: !!permissions.editSchedules, deleteSchedules: !!permissions.deleteSchedules, viewSessions: !!permissions.viewSessions }} />
       </section>
     </div>
-
-    {selectedScheduleCurrent && <div className={styles.detailBackdrop} onMouseDown={() => setSelectedSchedule(null)}>
-      <aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(event) => event.stopPropagation()}>
-        <div className={styles.detailHeading}>
-          <div><p className={styles.sectionLabel}>일정 상세</p><h2 id="detail-title">{selectedScheduleCurrent.institutionName}</h2><p>{formatBusinessDate(selectedScheduleCurrent.date)} · {selectedScheduleCurrent.region}</p></div>
-          <div className={styles.detailActions}>{permissions.editSchedules && <button type="button" onClick={() => handleEditSchedule(selectedScheduleCurrent)} className={styles.detailEdit}>수정</button>}<button type="button" onClick={() => setSelectedSchedule(null)} className={styles.closeDetail} aria-label="일정 상세 닫기">×</button></div>
-        </div>
-        <dl className={styles.detailMeta}>
-          <div><dt>교육 유형</dt><dd>{trainingTypeLabel(selectedScheduleCurrent.trainingType)}</dd></div>
-          <div><dt>모집 상태</dt><dd>{scheduleStatusLabel(selectedScheduleCurrent.status)}</dd></div>
-          <div><dt>필요 배정 인원</dt><dd>{selectedScheduleCurrent.capacity}명</dd></div>
-        </dl>
-        <SessionManagement scheduleId={selectedScheduleCurrent.id} scheduleDate={selectedScheduleCurrent.date} scheduleName={selectedScheduleCurrent.institutionName} canEdit={!!permissions.editSessions} canDelete={!!permissions.deleteSessions} capacity={selectedScheduleCurrent.capacity} />
-      </aside>
-    </div>}
 
     {isFormOpen && <div className={styles.dialogBackdrop} onMouseDown={handleCloseForm}>
       <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="schedule-form-title" onMouseDown={(event) => event.stopPropagation()}>
