@@ -1,130 +1,26 @@
-/* src/components/ScheduleList/ScheduleList.module.css */
-
-.scheduleList {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.filterContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.searchInput,
-.filterSelect,
-.filterInput {
-  flex: 1;
-  min-width: 200px;
-  padding: 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.clearFiltersButton {
-  padding: 8px 16px;
-  background-color: var(--secondary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.scheduleItem {
-  background-color: white;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.scheduleItem h3 {
-  margin-top: 0;
-  color: var(--primary-color);
-}
-
-.scheduleItem p {
-  margin: 5px 0;
-  color: var(--text-color);
-}
-
-.buttonContainer {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.editButton,
-.deleteButton,
-.viewSessionsButton {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.editButton {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.deleteButton {
-  background-color: var(--danger-color);
-  color: white;
-}
-
-.viewSessionsButton {
-  background-color: var(--info-color);
-  color: white;
-}
-
-.editButton:hover,
-.deleteButton:hover,
-.viewSessionsButton:hover {
-  opacity: 0.9;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.pagination button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  background-color: white;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.pagination button.activePage {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.noResults {
-  text-align: center;
-  color: var(--text-color);
-  font-style: italic;
-  margin-top: 20px;
-}
-
-@media (max-width: 560px) {
-  .scheduleList { padding: 0; }
-  .filterContainer { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
-  .searchInput, .filterSelect, .filterInput { min-width: 0; }
-  .buttonContainer { flex-wrap: wrap; }
-  .buttonContainer button { flex: 1 1 5.5rem; min-height: 44px; }
-  .scheduleItem { padding: 1rem; }
-}
+.scheduleList { display: grid; gap: 0.75rem; }
+.scheduleCard { padding: 1rem; border: 1px solid var(--color-border); border-radius: 14px; background: #fff; box-shadow: 0 2px 6px rgba(23, 32, 51, 0.04); }
+.cardHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.cardHeader h3 { margin: 0; font-size: 1.05rem; letter-spacing: -0.01em; }
+.region { margin: 0.2rem 0 0; color: var(--color-text-secondary); font-size: 0.9rem; }
+.badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; }
+.statusBadge, .typeBadge { display: inline-flex; align-items: center; min-height: 26px; padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.78rem; font-weight: 800; white-space: nowrap; }
+.statusBadge { background: #e0f2fe; color: #075985; }
+.status_open { background: #dcfce7; color: #166534; }
+.status_closed { background: #edf2f7; color: #475569; }
+.status_adjusted { background: #fef3c7; color: #92400e; }
+.typeBadge { background: #f1f5f9; color: #475569; }
+.meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin: 1rem 0; }
+.meta div { padding: 0.6rem 0.7rem; border-radius: 9px; background: var(--color-surface-muted); }
+.meta dt { color: var(--color-text-secondary); font-size: 0.75rem; font-weight: 700; }
+.meta dd { margin: 0.15rem 0 0; font-weight: 800; font-size: 0.9rem; }
+.cardActions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.primaryAction { flex: 1 1 11rem; background: var(--color-button-primary); color: #fff; }
+.primaryAction:hover { background: var(--color-button-hover); }
+.secondaryAction, .deleteAction { flex: 0 1 auto; padding-inline: 0.75rem; background: #fff; border: 1px solid var(--color-border); color: var(--color-text-primary); }
+.deleteAction { border-color: #fecaca; color: var(--color-danger); }
+.emptyState { display: grid; justify-items: start; gap: 0.6rem; padding: 2rem 1rem; border: 1px dashed #94a3b8; border-radius: 14px; background: #f8fafc; color: var(--color-text-secondary); text-align: left; }
+.emptyState strong { color: var(--color-text-primary); }
+.emptyState p { margin: 0; font-size: 0.9rem; }
+.emptyAction { background: var(--color-button-primary); color: #fff; }
+@media (max-width: 480px) { .cardHeader { flex-direction: column; } .badges { justify-content: flex-start; } .primaryAction { flex-basis: 100%; } .secondaryAction, .deleteAction { flex: 1; } }

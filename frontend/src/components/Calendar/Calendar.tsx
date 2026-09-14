@@ -1,17 +1,22 @@
 // src/components/Calendar/Calendar.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Schedule } from '../../types';
 import styles from './Calendar.module.css';
 
 interface CalendarProps {
   schedules: Schedule[];
+  selectedDate: Date;
   onDateSelect: (date: Date) => void;
   userRole: 'admin' | 'instructor';
 }
 
-const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
+const Calendar: React.FC<CalendarProps> = ({ schedules, selectedDate, onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    setCurrentDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+  }, [selectedDate]);
 
   const currentMonthSchedules = useMemo(() => {
     return schedules;
@@ -32,6 +37,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   const getDayClass = (day: number) => {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const isToday = date.toDateString() === new Date().toDateString();
+    const isSelected = date.toDateString() === selectedDate.toDateString();
     const hasSchedule = currentMonthSchedules.some(schedule => {
       const [year, month, day] = schedule.date.split('-').map(Number);
       const scheduleDate = new Date(year, month - 1, day);
@@ -40,6 +46,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   
     let classNames = [styles.calendarDay];
     if (isToday) classNames.push(styles.today);
+    if (isSelected) classNames.push(styles.selected);
     if (hasSchedule) classNames.push(styles.hasSchedule);
     return classNames.join(' ');
   };
@@ -66,15 +73,7 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
           aria-label={`${date.toLocaleDateString('ko-KR', { dateStyle: 'full' })}${daySchedules.length ? `, 일정 ${daySchedules.length}건` : ''}`}
         >
           <span className={styles.dayNumber}>{day}</span>
-          {daySchedules.map(schedule => (
-            <div
-              key={schedule.id}
-              className={`${styles.scheduleIndicator} ${
-              ''
-              }`}
-              title={`${schedule.institutionName} - ${schedule.trainingType}`}
-            ></div>
-          ))}
+          {daySchedules.length > 0 && <span className={styles.scheduleCount}>{daySchedules.length}</span>}
         </button>
       );
     }

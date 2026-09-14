@@ -91,8 +91,8 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose, onSaved 
 
   return (
     <form onSubmit={handleSubmit} className={styles.scheduleForm}>
-      <h2>{schedule ? '일정 수정' : '새 일정 등록'}</h2>
-      
+      <div className={styles.formHeader}><div><p className={styles.eyebrow}>일정 정보</p><h2 id="schedule-form-title">{schedule ? '일정 수정' : '새 일정 등록'}</h2><p>일정의 기본 조건을 먼저 정한 뒤 세션과 강사 지원을 관리합니다.</p></div><button type="button" onClick={onClose} className={styles.closeButton} aria-label="일정 등록 창 닫기">×</button></div>
+      <div className={styles.formGrid}>
       <div className={styles.formGroup}>
         <label htmlFor="date">업무 날짜</label>
         <input
@@ -144,7 +144,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose, onSaved 
           min="1"
         />
         {errors.capacity && <span className={styles.error} role="alert">{errors.capacity}</span>}
-        <p className={styles.helpText}>이 일정에서 관리자가 최종 승인할 수 있는 강사 수입니다. 신청은 접수 순서대로 검토할 수 있습니다.</p>
+        <p className={styles.helpText}>관리자가 최종 승인할 수 있는 강사 수입니다. 지원은 접수 순서대로 검토합니다.</p>
       </div>
 
       <div className={styles.formGroup}>
@@ -171,6 +171,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onClose, onSaved 
         >
           {(['open', 'closed', 'adjusted'] as const).map((status) => <option key={status} value={status}>{scheduleStatusLabel(status)}</option>)}
         </select>
+      </div>
       </div>
 
       <div className={styles.formActions}>
