@@ -35,13 +35,21 @@ const ScheduleManagement: React.FC = () => {
     if (selectedSchedule && !schedules.some((schedule) => schedule.id === selectedSchedule.id)) setSelectedSchedule(null);
   }, [schedules, selectedSchedule]);
   useEffect(() => {
-    if (!isFormOpen) return undefined;
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setIsFormOpen(false); };
+    if (!isFormOpen && !selectedSchedule) return undefined;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (isFormOpen) setIsFormOpen(false);
+      else setSelectedSchedule(null);
+    };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [isFormOpen]);
+  }, [isFormOpen, selectedSchedule]);
 
   const handleDateSelect = useCallback((date: Date) => { setSelectedDate(date); setSelectedSchedule(null); }, []);
+  const handleAdjacentDate = useCallback((offset: number) => {
+    setSelectedSchedule(null);
+    setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() + offset));
+  }, []);
   const handleAddSchedule = useCallback(() => {
     if (!permissions?.editSchedules) return showErrorNotification('일정을 등록할 권한이 없습니다.');
     setEditingSchedule(undefined); setIsFormOpen(true);
@@ -78,7 +86,7 @@ const ScheduleManagement: React.FC = () => {
 
   return <main className={styles.scheduleManagement}>
     <header className={styles.pageHeader}>
-      <div><p className={styles.eyebrow}>운영 콘솔</p><h1>일정 운영</h1><p className={styles.pageDescription}>일정, 세션, 강사 지원을 하나의 흐름으로 관리하세요.</p></div>
+      <div><h1>일정 운영</h1><p className={styles.pageDescription}>일정, 세션, 강사 배정을 한 화면에서 관리합니다.</p></div>
       <div className={styles.accountArea}><span className={styles.accountName}>{user.username} <small>관리자</small></span><Notifications /><button onClick={handleLogout} className={styles.logoutButton}>로그아웃</button></div>
     </header>
 
@@ -93,7 +101,7 @@ const ScheduleManagement: React.FC = () => {
 
       <section className={styles.agendaPanel} aria-labelledby="agenda-title">
         <div className={styles.agendaHeading}>
-          <div><p className={styles.sectionLabel}>선택한 날짜</p><h2 id="agenda-title">{formatBusinessDate(`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`)}</h2></div>
+          <div><p className={styles.sectionLabel}>선택한 날짜</p><div className={styles.dateNavigation}><button type="button" onClick={() => handleAdjacentDate(-1)} aria-label="이전 날짜">‹</button><h2 id="agenda-title">{formatBusinessDate(`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`)}</h2><button type="button" onClick={() => handleAdjacentDate(1)} aria-label="다음 날짜">›</button></div></div>
           {permissions.editSchedules && <button type="button" onClick={handleAddSchedule} className={styles.addButton}>+ 새 일정 등록</button>}
         </div>
         <div className={styles.summary} aria-label="선택 날짜 요약">
@@ -116,18 +124,20 @@ const ScheduleManagement: React.FC = () => {
       </section>
     </div>
 
-    {selectedScheduleCurrent && <section className={styles.detailPanel} aria-labelledby="detail-title">
-      <div className={styles.detailHeading}>
-        <div><p className={styles.sectionLabel}>일정 상세</p><h2 id="detail-title">{selectedScheduleCurrent.institutionName}</h2><p>{formatBusinessDate(selectedScheduleCurrent.date)} · {selectedScheduleCurrent.region}</p></div>
-        {permissions.editSchedules && <button type="button" onClick={() => handleEditSchedule(selectedScheduleCurrent)} className={styles.detailEdit}>일정 수정</button>}
-      </div>
-      <dl className={styles.detailMeta}>
-        <div><dt>교육 유형</dt><dd>{trainingTypeLabel(selectedScheduleCurrent.trainingType)}</dd></div>
-        <div><dt>모집 상태</dt><dd>{scheduleStatusLabel(selectedScheduleCurrent.status)}</dd></div>
-        <div><dt>필요 배정 인원</dt><dd>{selectedScheduleCurrent.capacity}명</dd></div>
-      </dl>
-      <SessionManagement scheduleId={selectedScheduleCurrent.id} scheduleDate={selectedScheduleCurrent.date} scheduleName={selectedScheduleCurrent.institutionName} canEdit={!!permissions.editSessions} canDelete={!!permissions.deleteSessions} capacity={selectedScheduleCurrent.capacity} />
-    </section>}
+    {selectedScheduleCurrent && <div className={styles.detailBackdrop} onMouseDown={() => setSelectedSchedule(null)}>
+      <aside className={styles.detailPanel} role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(event) => event.stopPropagation()}>
+        <div className={styles.detailHeading}>
+          <div><p className={styles.sectionLabel}>일정 상세</p><h2 id="detail-title">{selectedScheduleCurrent.institutionName}</h2><p>{formatBusinessDate(selectedScheduleCurrent.date)} · {selectedScheduleCurrent.region}</p></div>
+          <div className={styles.detailActions}>{permissions.editSchedules && <button type="button" onClick={() => handleEditSchedule(selectedScheduleCurrent)} className={styles.detailEdit}>수정</button>}<button type="button" onClick={() => setSelectedSchedule(null)} className={styles.closeDetail} aria-label="일정 상세 닫기">×</button></div>
+        </div>
+        <dl className={styles.detailMeta}>
+          <div><dt>교육 유형</dt><dd>{trainingTypeLabel(selectedScheduleCurrent.trainingType)}</dd></div>
+          <div><dt>모집 상태</dt><dd>{scheduleStatusLabel(selectedScheduleCurrent.status)}</dd></div>
+          <div><dt>필요 배정 인원</dt><dd>{selectedScheduleCurrent.capacity}명</dd></div>
+        </dl>
+        <SessionManagement scheduleId={selectedScheduleCurrent.id} scheduleDate={selectedScheduleCurrent.date} scheduleName={selectedScheduleCurrent.institutionName} canEdit={!!permissions.editSessions} canDelete={!!permissions.deleteSessions} capacity={selectedScheduleCurrent.capacity} />
+      </aside>
+    </div>}
 
     {isFormOpen && <div className={styles.dialogBackdrop} onMouseDown={handleCloseForm}>
       <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="schedule-form-title" onMouseDown={(event) => event.stopPropagation()}>

@@ -1,18 +1,18 @@
 :root {
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f4f7fb;
-  --color-surface-muted: #edf2f7;
-  --color-text-primary: #172033;
-  --color-text-secondary: #526075;
-  --color-border: #cbd5e1;
-  --color-button-primary: #0f766e;
-  --color-button-hover: #115e59;
+  --color-bg-secondary: #f6f7f9;
+  --color-surface-muted: #f1f3f5;
+  --color-text-primary: #17212b;
+  --color-text-secondary: #697586;
+  --color-border: #e2e7ec;
+  --color-button-primary: #147d70;
+  --color-button-hover: #0f635a;
   --color-button-text: #ffffff;
   --color-danger: #b42318;
   --color-danger-hover: #8f1b13;
   --color-info: #1d4ed8;
   --color-warning: #9a6700;
-  --shadow-card: 0 8px 24px rgba(23, 32, 51, 0.08);
+  --shadow-card: 0 1px 2px rgba(23, 33, 43, 0.04);
   --primary-color: var(--color-button-primary);
   --secondary-color: #475569;
   --danger-color: var(--color-danger);
@@ -32,7 +32,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 button, input, select, textarea { font: inherit; }
 button { min-height: 44px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
