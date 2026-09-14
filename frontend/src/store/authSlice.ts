@@ -1,6 +1,6 @@
 // src/store/authSlice.ts
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService, { LoginCredentials } from '../services/authService';
 import { User } from '../types';
 import { Permission, getPermissions } from '../utils/permissions';
@@ -29,8 +29,8 @@ export const login = createAsyncThunk(
     try {
       const response = await authService.login(credentials);
       return response.user;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+    } catch (error: unknown) {
+      return rejectWithValue(error instanceof Error ? error.message : '로그인하지 못했습니다.');
     }
   }
 );
@@ -45,6 +45,13 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    expireSession: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.permissions = null;
+      state.loading = false;
+      state.error = '로그인 시간이 만료되었습니다. 다시 로그인해 주세요.';
     },
   },
   extraReducers: (builder) => {
@@ -71,6 +78,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, expireSession } = authSlice.actions;
 
 export default authSlice.reducer;

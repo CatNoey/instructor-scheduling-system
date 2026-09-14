@@ -1,86 +1,50 @@
-import { UserRole } from '../utils/permissions';
+export type UserRole = 'admin' | 'instructor';
+export type TrainingType = 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
+export type ScheduleStatus = 'open' | 'closed' | 'adjusted';
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: 'admin' | 'instructor';
-}
-
-export interface Instructor {
-  id: string;
-  userId: string;
-  name: string;
-  rank: 'team_leader' | 'regular' | 'new';
-  phoneNumber: string;
-  region: string;
-  availableDays: string[];
-  prohibitedAdmins: string[];
-  notes: string;
-}
+/** IDs are numeric throughout the API, including the JWT userId claim. */
+export interface User { id: number; username: string; email: string; role: UserRole; }
 
 export interface Schedule {
-  id: string;
+  id: number;
+  /** Business date, never an ISO timestamp. */
   date: string;
   institutionName: string;
   region: string;
   capacity: number;
-  trainingType: 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
-  status: 'open' | 'closed' | 'adjusted';
-  createdBy: string;
+  trainingType: TrainingType;
+  status: ScheduleStatus;
 }
-
-export type TrainingType = 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
+export type ScheduleInput = Omit<Schedule, 'id'>;
 
 export interface Session {
-  id: string;
-  scheduleId: string;
+  id: number;
+  scheduleId: number;
+  /** UTC ISO timestamp returned by the API. */
   startTime: string;
+  /** UTC ISO timestamp returned by the API. */
   endTime: string;
+  /** Free-text contact or session label set by an administrator. */
   instructor: string;
-  notes?: string;
-  testName?: string;
-  grade?: string;
-  classCount?: number;
-  studentCount?: number;
-  compensation?: number;
-  trainingType: 'class' | 'teacher' | 'all_staff' | 'remote' | 'other';
+  notes?: string | null;
+  trainingType: TrainingType;
+  /** Included for instructor-facing session lists. */
+  schedule?: Pick<Schedule, 'id' | 'date' | 'institutionName' | 'region' | 'status'>;
 }
+export type SessionInput = Omit<Session, 'id'>;
+export type SessionUpdateInput = Omit<Session, 'id' | 'scheduleId'>;
 
 export interface InstructorApplication {
-  id: string;
-  sessionId: string;
-  instructorId: string;
+  id: number;
+  sessionId: number;
+  instructorId: number;
   status: 'pending' | 'approved' | 'rejected';
   session: Session;
+  instructor?: Pick<User, 'id' | 'username' | 'email'>;
+  createdAt: string;
 }
 
-export interface Institution {
-  id: string;
-  name: string;
-  type: 'elementary' | 'middle' | 'high' | 'other';
-  region: string;
-}
-
-export interface Payroll {
-  id: string;
-  instructorId: string;
-  month: number;
-  year: number;
-  totalCompensation: number;
-  status: 'pending' | 'completed';
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-  };
-  meta?: {
-    page?: number;
-    pageSize?: number;
-    totalCount?: number;
-  };
-}
+export interface ApiError { code: string; message: string; }
+export interface ApiResponse<T> { success: true; data: T; }
+export interface ApiFailureResponse { success: false; error: ApiError; }
+export type ApiEnvelope<T> = ApiResponse<T> | ApiFailureResponse;

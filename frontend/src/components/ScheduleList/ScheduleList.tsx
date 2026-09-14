@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { deleteSchedule } from '../../store/scheduleSlice';
 import { Schedule } from '../../types';
+import { showErrorNotification } from '../../utils/notifications';
+import { formatBusinessDate, scheduleStatusLabel, trainingTypeLabel } from '../../utils/presentation';
 import styles from './ScheduleList.module.css';
 
 interface ScheduleListProps {
@@ -18,8 +20,6 @@ interface ScheduleListProps {
   };
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const ScheduleList: React.FC<ScheduleListProps> = ({
   schedules,
   onEdit,
@@ -29,7 +29,6 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
   const dispatch: AppDispatch = useDispatch();
   const { isDeleting } = useSelector((state: RootState) => state.schedules);
 
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterDate, setFilterDate] = useState('');
@@ -47,19 +46,8 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     });
   }, [schedules, searchTerm, filterType, filterDate, filterRegion]);
 
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentItems = filteredSchedules.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(filteredSchedules.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -75,12 +63,15 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
         setFilterRegion(value);
         break;
     }
-    setCurrentPage(1);
   };
 
-  const handleDelete = (scheduleId: string) => {
-    if (window.confirm('Are you sure you want to delete this schedule?')) {
-      dispatch(deleteSchedule(scheduleId));
+  const handleDelete = async (scheduleId: number) => {
+    if (window.confirm('이 일정과 연결된 세션을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')) {
+      try {
+        await dispatch(deleteSchedule(scheduleId)).unwrap();
+      } catch (error) {
+        showErrorNotification(error instanceof Error ? error.message : '일정을 삭제하지 못했습니다.');
+      }
     }
   };
 
@@ -89,7 +80,6 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     setFilterType('');
     setFilterDate('');
     setFilterRegion('');
-    setCurrentPage(1);
   };
 
   return (
@@ -97,7 +87,8 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
       <div className={styles.filterContainer}>
         <input
           type="text"
-          placeholder="Search by institution or region"
+          placeholder="기관명 또는 지역 검색"
+          aria-label="기관명 또는 지역 검색"
           value={searchTerm}
           onChange={handleSearchChange}
           className={styles.searchInput}
@@ -108,12 +99,8 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           onChange={handleFilterChange}
           className={styles.filterSelect}
         >
-          <option value="">All Types</option>
-          <option value="class">Class</option>
-          <option value="teacher">Teacher</option>
-          <option value="all_staff">All Staff</option>
-          <option value="remote">Remote</option>
-          <option value="other">Other</option>
+          <option value="">전체 교육 유형</option>
+          {(['class', 'teacher', 'all_staff', 'remote', 'other'] as const).map((type) => <option key={type} value={type}>{trainingTypeLabel(type)}</option>)}
         </select>
         <input
           type="date"
@@ -125,27 +112,28 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
         <input
           type="text"
           name="region"
-          placeholder="Filter by region"
+          placeholder="지역으로 필터"
+          aria-label="지역으로 필터"
           value={filterRegion}
           onChange={handleFilterChange}
           className={styles.filterInput}
         />
         <button onClick={handleClearFilters} className={styles.clearFiltersButton}>
-          Clear Filters
+          필터 초기화
         </button>
       </div>
 
-      {currentItems.map((schedule) => (
+      {filteredSchedules.map((schedule) => (
         <div key={schedule.id} className={styles.scheduleItem}>
-          <h3>{new Date(schedule.date).toLocaleDateString()}</h3>
-          <p>Institution: {schedule.institutionName}</p>
-          <p>Region: {schedule.region}</p>
-          <p>Capacity: {schedule.capacity}</p>
-          <p>Type: {schedule.trainingType}</p>
-          <p>Status: {schedule.status}</p>
+          <h3>{formatBusinessDate(schedule.date)}</h3>
+          <p><span>기관</span>{schedule.institutionName}</p>
+          <p><span>지역</span>{schedule.region}</p>
+          <p><span>필요 배정 인원</span>{schedule.capacity}명</p>
+          <p><span>교육 유형</span>{trainingTypeLabel(schedule.trainingType)}</p>
+          <p><span>상태</span>{scheduleStatusLabel(schedule.status)}</p>
           <div className={styles.buttonContainer}>
             {permissions.editSchedules && (
-              <button onClick={() => onEdit(schedule)} className={styles.editButton}>Edit</button>
+              <button onClick={() => onEdit(schedule)} className={styles.editButton}>수정</button>
             )}
             {permissions.deleteSchedules && (
               <button 
@@ -153,33 +141,21 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
                 disabled={isDeleting}
                 className={styles.deleteButton}
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? '삭제 중…' : '삭제'}
               </button>
             )}
             {permissions.viewSessions && (
               <button onClick={() => onViewSessions(schedule)} className={styles.viewSessionsButton}>
-                View Sessions
+                세션 보기
               </button>
             )}
           </div>
         </div>
       ))}
       
-      {currentItems.length === 0 && (
-        <p className={styles.noResults}>No schedules found matching your criteria.</p>
+      {filteredSchedules.length === 0 && (
+        <p className={styles.noResults}>조건에 맞는 일정이 없습니다.</p>
       )}
-
-      <div className={styles.pagination}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-          <button
-            key={pageNumber}
-            onClick={() => handlePageChange(pageNumber)}
-            className={currentPage === pageNumber ? styles.activePage : ''}
-          >
-            {pageNumber}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };

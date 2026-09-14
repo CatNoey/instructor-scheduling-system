@@ -3,13 +3,14 @@
 import { DataTypes, Model, CreationOptional, InferAttributes, InferCreationAttributes } from 'sequelize';
 import bcryptjs from 'bcryptjs';
 import sequelize from '../config/database';
+import { Role } from '../config/env';
 
 export interface UserAttributes {
   id: CreationOptional<number>;
   username: string;
   email: string;
   password: string;
-  role: string;
+  role: Role;
 }
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> implements UserAttributes {
@@ -17,13 +18,13 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> i
   declare username: string;
   declare email: string;
   declare password: string;
-  declare role: string;
+  declare role: Role;
 }
 
 User.init(
   {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
@@ -42,7 +43,7 @@ User.init(
       allowNull: false,
     },
     role: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('admin', 'instructor'),
       allowNull: false,
     },
   },
@@ -57,7 +58,9 @@ User.beforeCreate(async (user: User) => {
   user.password = await bcryptjs.hash(user.password, salt);
 });
 
-export const createUser = (userData: Omit<UserAttributes, 'id'>): Promise<User> => User.create(userData);
+export type NewUserInput = Omit<UserAttributes, 'id'>;
+
+export const createUser = (userData: NewUserInput): Promise<User> => User.create(userData);
 
 export const getUserByUsername = async (username: string): Promise<User | null> => {
   return await User.findOne({ where: { username } });

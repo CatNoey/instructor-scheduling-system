@@ -1,73 +1,41 @@
-// src/server.ts
-
-import express, { Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import authRoutes from './routes/auth';
-import scheduleRoutes from './routes/scheduleRoutes';
-import instructorApplicationRoutes from './routes/instructorApplicationRoutes';
+import { Server } from 'node:http';
+import { createApp } from './app';
+import { getAppConfig } from './config/env';
 import sequelize from './config/database';
-import path from 'path';
-import './models/associations';
 
-console.log('Current working directory:', process.cwd());
-console.log('Attempting to load .env file from:', path.resolve(process.cwd(), '.env'));
+export const startServer = async (): Promise<{ server: Server; close: () => Promise<void> }> => {
+  const config = getAppConfig();
+  let ready = false;
+  const app = createApp({ corsAllowedOrigins: config.corsAllowedOrigins, isReady: () => ready });
 
-dotenv.config();
+  await sequelize.authenticate();
+  ready = true;
 
-console.log('Environment variables:', {
-  PORT: process.env.PORT,
-  NODE_ENV: process.env.NODE_ENV,
-  DB_USER: process.env.DB_USER,
-  DB_HOST: process.env.DB_HOST,
-  DB_NAME: process.env.DB_NAME,
-  DB_PORT: process.env.DB_PORT,
-});
-
-const app = express();
-
-app.use(cors({
-  origin: 'http://localhost:3001',
-  credentials: true
-}));
-
-app.use(express.json());
-
-// Add logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
-app.use('/api/auth', authRoutes);
-app.use('/api/schedules', scheduleRoutes);
-app.use('/api', instructorApplicationRoutes);
-
-app.get('/', (req, res) => {
-  res.json({ message: "Welcome to the Instructor Scheduling System API" });
-});
-
-const port = process.env.PORT || 3000;
-
-sequelize.sync({ alter: true }).then(() => {
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-    console.log(`CORS is enabled for origin: http://localhost:3001`);
+  const server = await new Promise<Server>((resolve, reject) => {
+    const listener = app.listen(config.port, () => resolve(listener));
+    listener.once('error', reject);
   });
-}).catch((error) => {
-  console.error('Unable to sync database:', error);
-});
 
-// Add a catch-all route for unhandled requests
-app.use((req: Request, res: Response) => {
-  console.log(`Unhandled request: ${req.method} ${req.url}`);
-  res.status(404).json({ message: 'Not Found' });
-});
+  const close = async () => {
+    ready = false;
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    await sequelize.close();
+  };
+  return { server, close };
+};
 
-// Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
+const main = async () => {
+  const running = await startServer();
+  const shutdown = () => {
+    void running.close().then(() => process.exit(0)).catch(() => process.exit(1));
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+};
 
-export default app;
+if (require.main === module) {
+  void main().catch((error: unknown) => {
+    console.error('Server failed to start', error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

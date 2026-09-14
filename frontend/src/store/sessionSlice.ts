@@ -1,195 +1,87 @@
-// src/store/sessionSlice.ts
-
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Session, ApiResponse, InstructorApplication } from '../types';
-import {
-  getSessions,
-  createSession,
-  updateSession as updateSessionApi,
-  deleteSession as deleteSessionApi,
-  getAvailableSessions,
-  applyForSession as applyForSessionApi,
-  cancelApplication as cancelApplicationApi
-} from '../services/api';
-import { getInstructorApplications } from '../services/api';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { InstructorApplication, Session, SessionInput } from '../types';
+import { getSessions, createSession, updateSession as updateSessionApi, deleteSession as deleteSessionApi, getAvailableSessions, applyForSession as applyForSessionApi, cancelApplication as cancelApplicationApi, getInstructorApplications } from '../services/api';
 
 interface SessionState {
   items: Session[];
+  selectedScheduleId: number | null;
   availableSessions: Session[];
   instructorApplications: InstructorApplication[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  applyingSessionIds: number[];
+  cancellingApplicationIds: number[];
 }
+const initialState: SessionState = { items: [], selectedScheduleId: null, availableSessions: [], instructorApplications: [], status: 'idle', error: null, applyingSessionIds: [], cancellingApplicationIds: [] };
+const errorMessage = (error: unknown) => error instanceof Error ? error.message : '처리 중 알 수 없는 오류가 발생했습니다.';
 
-const initialState: SessionState = {
-  items: [],
-  availableSessions: [],
-  instructorApplications: [],
-  status: 'idle',
-  error: null,
-};
-
-export const fetchSessions = createAsyncThunk<Session[], string, { rejectValue: string }>(
-  'sessions/fetchSessions',
-  async (scheduleId, { rejectWithValue }) => {
-    try {
-      const response = await getSessions(scheduleId);
-      if (!response.data) {
-        return rejectWithValue('No sessions found');
-      }
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch sessions');
-    }
-  }
+export const fetchSessions = createAsyncThunk<Session[], number, { rejectValue: string }>(
+  'sessions/fetchSessions', async (scheduleId, { rejectWithValue }) => {
+    try { return await getSessions(scheduleId); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
 );
-
 export const fetchAvailableSessions = createAsyncThunk<Session[], void, { rejectValue: string }>(
-  'sessions/fetchAvailableSessions',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await getAvailableSessions();
-      if (!response.data) {
-        return rejectWithValue('No available sessions found');
-      }
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch available sessions');
-    }
-  }
+  'sessions/fetchAvailableSessions', async (_, { rejectWithValue }) => {
+    try { return await getAvailableSessions(); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
 );
-
-export const applyForSession = createAsyncThunk<
-  InstructorApplication,
-  string,
-  { rejectValue: string }
->(
-  'sessions/applyForSession',
-  async (sessionId, { rejectWithValue }) => {
-    try {
-      const response = await applyForSessionApi(sessionId);
-      if (response.success && response.data) {
-        return response.data;
-      } else {
-        return rejectWithValue(response.error?.message || 'Failed to apply for session');
-      }
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'An unknown error occurred');
-    }
-  }
-);
-
-export const cancelApplication = createAsyncThunk<string, string, { rejectValue: string }>(
-  'sessions/cancelApplication',
-  async (applicationId, { rejectWithValue }) => {
-    try {
-      await cancelApplicationApi(applicationId);
-      return applicationId;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to cancel application');
-    }
-  }
-);
-
-export const addSession = createAsyncThunk<Session, Omit<Session, 'id'>, { rejectValue: string }>(
-  'sessions/addSession',
-  async (session, { rejectWithValue }) => {
-    try {
-      const newSession = await createSession(session);
-      return newSession;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to add session');
-    }
-  }
-);
-
-export const updateSession = createAsyncThunk<Session, Session, { rejectValue: string }>(
-  'sessions/updateSession',
-  async (session, { rejectWithValue }) => {
-    try {
-      const updatedSession = await updateSessionApi(session);
-      return updatedSession;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update session');
-    }
-  }
-);
-
-export const deleteSession = createAsyncThunk<{ scheduleId: string, sessionId: string }, { scheduleId: string, sessionId: string }, { rejectValue: string }>(
-  'sessions/deleteSession',
-  async ({ scheduleId, sessionId }, { rejectWithValue }) => {
-    try {
-      await deleteSessionApi(scheduleId, sessionId);
-      return { scheduleId, sessionId };
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete session');
-    }
-  }
-);
-
 export const fetchInstructorApplications = createAsyncThunk<InstructorApplication[], void, { rejectValue: string }>(
-  'sessions/fetchInstructorApplications',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await getInstructorApplications();
-      if (!response.data) {
-        return rejectWithValue('No applications found');
-      }
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch instructor applications');
-    }
-  }
+  'sessions/fetchInstructorApplications', async (_, { rejectWithValue }) => {
+    try { return await getInstructorApplications(); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
+);
+export const applyForSession = createAsyncThunk<InstructorApplication, number, { rejectValue: string }>(
+  'sessions/applyForSession', async (sessionId, { rejectWithValue }) => {
+    try { return await applyForSessionApi(sessionId); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
+);
+export const cancelApplication = createAsyncThunk<number, number, { rejectValue: string }>(
+  'sessions/cancelApplication', async (applicationId, { rejectWithValue }) => {
+    try { await cancelApplicationApi(applicationId); return applicationId; } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
+);
+export const addSession = createAsyncThunk<Session, SessionInput, { rejectValue: string }>(
+  'sessions/addSession', async (session, { rejectWithValue }) => {
+    try { return await createSession(session); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
+);
+export const updateSession = createAsyncThunk<Session, Session, { rejectValue: string }>(
+  'sessions/updateSession', async (session, { rejectWithValue }) => {
+    try { return await updateSessionApi(session); } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
+);
+export const deleteSession = createAsyncThunk<{ scheduleId: number; sessionId: number }, { scheduleId: number; sessionId: number }, { rejectValue: string }>(
+  'sessions/deleteSession', async ({ scheduleId, sessionId }, { rejectWithValue }) => {
+    try { await deleteSessionApi(scheduleId, sessionId); return { scheduleId, sessionId }; } catch (error) { return rejectWithValue(errorMessage(error)); }
+  },
 );
 
 const sessionSlice = createSlice({
-  name: 'sessions',
-  initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchSessions.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(fetchSessions.fulfilled, (state, action: PayloadAction<Session[]>) => {
-        state.status = 'succeeded';
-        state.items = action.payload;
-      })
-      .addCase(fetchSessions.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload || 'Failed to fetch sessions';
-      })
-      .addCase(fetchAvailableSessions.fulfilled, (state, action: PayloadAction<Session[]>) => {
-        state.availableSessions = action.payload;
-      })
-      .addCase(applyForSession.fulfilled, (state, action: PayloadAction<InstructorApplication>) => {
-        state.instructorApplications.push(action.payload);
-      })
-      .addCase(applyForSession.rejected, (state, action) => {
-        // Handle rejection, maybe set an error message in the state
-        state.error = action.payload || 'Failed to apply for session';
-      })
-      .addCase(cancelApplication.fulfilled, (state, action: PayloadAction<string>) => {
-        state.instructorApplications = state.instructorApplications.filter(
-          (app: InstructorApplication) => app.id !== action.payload
-        );
-      })
-      .addCase(addSession.fulfilled, (state, action: PayloadAction<Session>) => {
-        state.items.push(action.payload);
-      })
-      .addCase(updateSession.fulfilled, (state, action: PayloadAction<Session>) => {
-        const index = state.items.findIndex(session => session.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
-      })
-      .addCase(deleteSession.fulfilled, (state, action: PayloadAction<{ scheduleId: string, sessionId: string }>) => {
-        state.items = state.items.filter(session => session.id !== action.payload.sessionId);
-      })
-      .addCase(fetchInstructorApplications.fulfilled, (state, action: PayloadAction<InstructorApplication[]>) => {
-        state.instructorApplications = action.payload;
-      });
+  name: 'sessions', initialState,
+  reducers: {
+    resetSessions: () => initialState,
+    clearSessionError: (state) => { state.error = null; },
   },
+  extraReducers: (builder) => builder
+    .addCase(fetchSessions.pending, (state, action) => { state.status = 'loading'; state.error = null; state.selectedScheduleId = action.meta.arg; })
+    .addCase(fetchSessions.fulfilled, (state, action) => {
+      // Ignore a stale response after the user selected another schedule.
+      if (state.selectedScheduleId === action.meta.arg) { state.status = 'succeeded'; state.items = action.payload; }
+    })
+    .addCase(fetchSessions.rejected, (state, action) => { if (state.selectedScheduleId === action.meta.arg) { state.status = 'failed'; state.error = action.payload || '세션 목록을 불러오지 못했습니다.'; } })
+    .addCase(fetchAvailableSessions.fulfilled, (state, action) => { state.availableSessions = action.payload; })
+    .addCase(fetchAvailableSessions.rejected, (state, action) => { state.error = action.payload || '지원 가능한 세션을 불러오지 못했습니다.'; })
+    .addCase(fetchInstructorApplications.fulfilled, (state, action) => { state.instructorApplications = action.payload; })
+    .addCase(fetchInstructorApplications.rejected, (state, action) => { state.error = action.payload || '지원 내역을 불러오지 못했습니다.'; })
+    .addCase(applyForSession.pending, (state, action) => { state.applyingSessionIds.push(action.meta.arg); state.error = null; })
+    .addCase(applyForSession.fulfilled, (state, action) => { state.instructorApplications.push(action.payload); state.applyingSessionIds = state.applyingSessionIds.filter((id) => id !== action.meta.arg); })
+    .addCase(applyForSession.rejected, (state, action) => { state.applyingSessionIds = state.applyingSessionIds.filter((id) => id !== action.meta.arg); state.error = action.payload || '세션 지원을 완료하지 못했습니다.'; })
+    .addCase(cancelApplication.pending, (state, action) => { state.cancellingApplicationIds.push(action.meta.arg); state.error = null; })
+    .addCase(cancelApplication.fulfilled, (state, action) => { state.instructorApplications = state.instructorApplications.filter((app) => app.id !== action.payload); state.cancellingApplicationIds = state.cancellingApplicationIds.filter((id) => id !== action.meta.arg); })
+    .addCase(cancelApplication.rejected, (state, action) => { state.cancellingApplicationIds = state.cancellingApplicationIds.filter((id) => id !== action.meta.arg); state.error = action.payload || '지원 취소를 완료하지 못했습니다.'; })
+    .addCase(addSession.fulfilled, (state, action) => { if (state.selectedScheduleId === action.payload.scheduleId) state.items.push(action.payload); })
+    .addCase(updateSession.fulfilled, (state, action) => { const index = state.items.findIndex((session) => session.id === action.payload.id); if (index !== -1) state.items[index] = action.payload; })
+    .addCase(deleteSession.fulfilled, (state, action) => { state.items = state.items.filter((session) => session.id !== action.payload.sessionId); }),
 });
-
+export const { resetSessions, clearSessionError } = sessionSlice.actions;
 export default sessionSlice.reducer;

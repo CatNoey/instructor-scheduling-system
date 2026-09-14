@@ -119,3 +119,12 @@
   font-style: italic;
   margin-top: 20px;
 }
+
+@media (max-width: 560px) {
+  .scheduleList { padding: 0; }
+  .filterContainer { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  .searchInput, .filterSelect, .filterInput { min-width: 0; }
+  .buttonContainer { flex-wrap: wrap; }
+  .buttonContainer button { flex: 1 1 5.5rem; min-height: 44px; }
+  .scheduleItem { padding: 1rem; }
+}

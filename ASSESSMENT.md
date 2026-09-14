@@ -1,42 +1,41 @@
-# 구현 상태 점검 — 2026-09-08
+# 구현 상태 및 통합 검토 — 2026-09-14
 
-판정: 초기 프로토타입. 화면과 데이터 모델의 기본 구조는 있으나, 실제 사용자 흐름을 끝까지 수행하는 MVP는 미완성입니다. 정식 요구사항과 수용 기준이 없어 정확한 완성률을 산출할 수 없습니다. 로그인 → 일정 관리 → 강사 지원 → 승인이라는 최소 업무 흐름을 기준으로 보면 대략 30~40% 수준이라는 정성적 추정입니다. 테스트 커버리지 수치가 아닙니다.
+## 기준선과 이번 MVP
 
-## 기능별 근거
+2026-09-08 점검은 초기 프로토타입을 대상으로 한 과거 기록입니다. 당시에는 로그인 모의 처리, 미등록 지원 라우트, 일정 수정·삭제 미구현, 서버 권한 부재, 서버 시작 중 스키마 변경 등의 문제가 확인됐습니다. 이 문서는 그 평가를 현재 결과로 혼동하지 않기 위해 기준선과 새 검토 항목을 분리합니다.
 
-| 영역 | 구현 상태 | 근거 |
-|---|---|---|
-| 관리자 UI | 캘린더, 일정 폼, 목록, 필터, 세션 폼 구현 | frontend/src/components |
-| 로그인 | 프론트는 입력 비밀번호를 검증하지 않고 항상 관리자·mock-jwt-token 반환 | frontend/src/services/authService.ts |
-| 서버 인증 | bcrypt·JWT 로그인/회원가입 코드 존재. 공개 회원가입에서 요청 role을 그대로 사용하며 JWT 기본값이 발급·검증 간 다름 | backend/src/controllers/authController.ts, backend/src/middleware/authMiddleware.ts |
-| 일정 생성·조회 | 모델 저장·조회 구현. 실제 DB 연동은 미검증 | backend/src/controllers/scheduleController.ts |
-| 일정 수정·삭제 | 빈 함수로 응답도 보내지 않음 | 위 파일의 updateSchedule, deleteSchedule |
-| 서버 권한 | 일정 라우트에 인증·역할 미들웨어 없음. 프론트 권한 표시는 서버 보호를 대체하지 못함 | backend/src/routes/scheduleRoutes.ts |
-| 세션 CRUD | 프론트는 /schedules/:id/sessions를 호출하나 서버 라우트·Session 모델 없음 | frontend/src/services/api.ts, backend/src/routes, backend/src/models |
-| 강사 지원 | 컨트롤러/라우터는 있으나 server.ts에 등록 안 됨. URL과 응답 형식도 프론트와 불일치 | instructorApplicationRoutes.ts, instructorApplicationController.ts, server.ts |
-| 지원 데이터 모델 | 프론트 sessionId/session과 백엔드 scheduleId가 다름. include에 사용하는 schedule association 정의 없음 | frontend/src/types/index.ts, backend/src/models/InstructorApplication.ts |
-| 인증 헤더 | 공통 Axios 클라이언트에 Bearer 토큰 주입 없음 | frontend/src/services/api.ts |
-| 승인·배정·정산 | 상태/타입 일부만 존재. 해당 업무를 완료하는 서버 API 없음 | 모델 및 전체 라우트 조사 |
-| 배포·테스트 | 백엔드 컴파일 실패, 시작 경로 불일치, 테스트 구성/계약 정비 필요 | 아래 검증 결과 |
+이번 MVP의 완료 범위는 다음과 같습니다.
 
-## 실행한 검증
+- 숫자 ID·`admin`/`instructor` 역할만 사용하는 인증과 서버 권한 확인
+- 관리자 일정·세션 CRUD
+- 강사의 세션 지원, 본인 지원 내역 조회·취소
+- 관리자의 접수 순서 검토, 수동 배정·반려·재검토, 정원·동시간 중복 배정 방지
+- 중복 지원, 마감/과거 세션, 권한 오류와 일관된 API 오류 형식 처리
+- 명시적 마이그레이션, 분리 테스트 DB, CI 재현성
 
-- 원본 프론트: TypeScript `tsc --noEmit` 통과.
-- 통합 임시본 프론트: `CI=true npm run build` 통과. 기존 설치된 node_modules를 사용했으며 새 npm ci로 재현한 결과는 아님. Browserslist 및 Babel 의존성 경고 존재.
-- 원본 백엔드: `tsc --noEmit` 실패. `src/config/dbMigration.ts` 15행의 connect, 25행의 end는 Sequelize에 없는 메서드입니다. pg Pool과 Sequelize 코드가 혼재합니다.
-- 백엔드 시작 스크립트는 dist/server.js를 가리키나 tsconfig의 rootDir='.' 설정상 server.ts 출력은 dist/src/server.js입니다.
-- Jest `--showConfig`로 구성만 확인. ts-jest 의존성은 있으나 TypeScript용 명시적 변환 설정은 없음.
-- 기존 테스트는 `/api/schedules/create`와 최상위 id 응답을 기대하나 실제 생성 경로는 `/api/schedules`, 응답은 `{ success, data }`입니다.
-- 기존 테스트 beforeEach가 Schedule.destroy({where:{}})를 호출하고 server import 시 DB sync가 실행돼 실제 테스트는 실행하지 않았습니다. DB 연동/E2E는 미검증입니다.
-- 통합 실행 스크립트 `node --check scripts/dev.cjs` 통과. 서버 시작은 DB 스키마 변경을 수반해 실행하지 않았습니다.
-- 두 원본 Git HEAD가 통합 main의 조상으로 보존되는지 검사하고, 원본 작업 파일과 통합본의 바이트 일치를 확인했습니다.
+정산·추가 역할은 의도적으로 제외합니다.
 
-## 완료 순서 제안
+## 통합 검토 체크리스트
 
-1. DB 초기화와 서버 실행을 분리하고 마이그레이션·빌드 출력·테스트 DB 설정을 정리.
-2. 실제 로그인 연결, 토큰 전달, 서버 역할 검증, 회원가입 role 제한.
-3. 일정 수정·삭제 구현과 API 응답 계약 통일.
-4. Schedule/Session 구분 확정 후 세션 CRUD, 지원·취소·승인·배정 구현 및 연결.
-5. 중복 지원, 일정 충돌, 정원, 권한 실패를 포함한 통합 테스트와 사용자 흐름 검증.
+통합 커밋에서 아래 항목을 실제 실행 결과와 함께 채웠습니다. 검증은 기존 DB가 아닌 `/private/tmp`의 일회용 PostgreSQL에서 수행했습니다.
 
-요구사항 범위와 목표 운영 규모를 확인하기 전에는 남은 개발 기간을 확정하기 어렵습니다.
+- [x] `npm ci`로 프런트·백엔드 의존성 재현
+- [x] 타입 검사, 프로덕션 빌드, 프런트·백엔드 린트, 프런트 3 suite/6 tests와 백엔드 9 suite/24 tests
+- [x] 빈 테스트 DB에서 001·002 마이그레이션 신규 적용·반복 적용
+- [x] 복합 유일 제약 생성, 동시 지원 1건 성공/1건 409, 세션 삭제 후 지원 cascade
+- [x] 일정·세션 생성, 401/403, 중복·과거·closed 일정 지원 409, 본인 취소 200
+- [x] 환경 누락 시 명확한 시작 실패와 `/health` 200
+- [x] 실제 통합 서버에서 관리자 로그인 → 일정·세션 생성 → 강사 로그인 → 지원·내역 → 취소·계정 전환
+- [x] 한국어 화면 문구·오류 안내, 키보드 초점, 320px·375px 모바일 레이아웃 수동 점검
+- [x] 강사 세션 목록·지원 내역에 교육 기관과 권역을 함께 반환·표시
+- [x] 접수 순서 관리자 목록, 수동 배정·반려·재검토, 일정 필요 인원 제한과 동시간 중복 배정 차단
+
+프로덕션 빌드는 통과했습니다. 의존성 설치 시 npm이 72개 취약점(16 low, 15 moderate, 38 high, 3 critical)을 보고했고, Create React App/Browserslist 노후화 경고도 있습니다. 이번 MVP에서는 자동 의존성 대체나 강제 업데이트를 하지 않았습니다.
+
+## 사용자 검토가 필요한 결정
+
+MVP 검증 후, 다음은 구현을 진행하기 전에 묶어 확인합니다.
+
+1. 브라우저 현지 시간대 대신 고정 업무 시간대가 필요한지
+2. 삭제 이력 보존과 계정 발급 방식
+3. 실제 배포 대상, 기존 DB 보존/전환, HTTPS·도메인, 토큰 정책, 백업/복구

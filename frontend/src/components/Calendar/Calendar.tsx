@@ -1,29 +1,18 @@
 // src/components/Calendar/Calendar.tsx
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Schedule } from '../../types';
-import { UserRole } from '../../utils/permissions';
 import styles from './Calendar.module.css';
 
 interface CalendarProps {
   schedules: Schedule[];
   onDateSelect: (date: Date) => void;
-  userRole: UserRole;
-  canViewTeamLeaderSchedules: boolean;
+  userRole: 'admin' | 'instructor';
 }
 
-const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, canViewTeamLeaderSchedules }) => {
+const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    console.log('Schedules received in Calendar:', schedules);
-    console.log('Number of schedules:', schedules.length);
-    if (schedules.length > 0) {
-      console.log('First schedule:', schedules[0]);
-      console.log('Last schedule:', schedules[schedules.length - 1]);
-    }
-  }, [schedules]);
-  
   const currentMonthSchedules = useMemo(() => {
     return schedules;
   }, [schedules]);
@@ -44,7 +33,8 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const isToday = date.toDateString() === new Date().toDateString();
     const hasSchedule = currentMonthSchedules.some(schedule => {
-      const scheduleDate = new Date(schedule.date);
+      const [year, month, day] = schedule.date.split('-').map(Number);
+      const scheduleDate = new Date(year, month - 1, day);
       return scheduleDate.toDateString() === date.toDateString();
     });
   
@@ -57,34 +47,35 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
   const renderCalendarDays = () => {
     const days = [];
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className={`${styles.calendarDay} ${styles.empty}`}></div>);
+      days.push(<div key={`empty-${i}`} className={`${styles.calendarDay} ${styles.empty}`} aria-hidden="true"></div>);
     }
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const daySchedules = currentMonthSchedules.filter(schedule => {
-        const scheduleDate = new Date(schedule.date);
+        const [year, month, day] = schedule.date.split('-').map(Number);
+        const scheduleDate = new Date(year, month - 1, day);
         return scheduleDate.toDateString() === date.toDateString();
       });
   
       days.push(
-        <div
+        <button
+          type="button"
           key={day}
           className={getDayClass(day)}
           onClick={() => onDateSelect(date)}
+          aria-label={`${date.toLocaleDateString('ko-KR', { dateStyle: 'full' })}${daySchedules.length ? `, 일정 ${daySchedules.length}건` : ''}`}
         >
           <span className={styles.dayNumber}>{day}</span>
           {daySchedules.map(schedule => (
             <div
               key={schedule.id}
               className={`${styles.scheduleIndicator} ${
-                userRole === 'team_leader' || new Date() > new Date(new Date(schedule.date).getTime() + 24 * 60 * 60 * 1000) 
-                  ? '' 
-                  : styles.teamLeaderOnly
+              ''
               }`}
               title={`${schedule.institutionName} - ${schedule.trainingType}`}
             ></div>
           ))}
-        </div>
+        </button>
       );
     }
     return days;
@@ -101,18 +92,12 @@ const Calendar: React.FC<CalendarProps> = ({ schedules, onDateSelect, userRole, 
   return (
     <div className={styles.calendar}>
       <div className={styles.calendarHeader}>
-        <button onClick={goToPreviousMonth}>&lt;</button>
+        <button type="button" onClick={goToPreviousMonth} aria-label="이전 달">‹</button>
         <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
-        <button onClick={goToNextMonth}>&gt;</button>
+        <button type="button" onClick={goToNextMonth} aria-label="다음 달">›</button>
       </div>
       <div className={styles.calendarGrid}>
-        <div className={styles.calendarDayHeader}>Sun</div>
-        <div className={styles.calendarDayHeader}>Mon</div>
-        <div className={styles.calendarDayHeader}>Tue</div>
-        <div className={styles.calendarDayHeader}>Wed</div>
-        <div className={styles.calendarDayHeader}>Thu</div>
-        <div className={styles.calendarDayHeader}>Fri</div>
-        <div className={styles.calendarDayHeader}>Sat</div>
+        {['일', '월', '화', '수', '목', '금', '토'].map((weekday) => <div key={weekday} className={styles.calendarDayHeader}>{weekday}</div>)}
         {renderCalendarDays()}
       </div>
     </div>
